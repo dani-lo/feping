@@ -1,0 +1,203 @@
+.website {
+    
+    padding: var(--ws-page-fixed-gap-top) var(--ws-gap-large) var(--ws-gap-large);
+    
+    #logo-img {
+        margin: var(--ws-gap-massive) 0 0;
+    }
+    
+    #logo-img-mob {
+        margin: var(--ws-gap-massive) 0 0;
+        padding-top: var(--ws-gap-huge);
+        display: none;
+    }
+    
+    #bg-img-lhs {
+        position: absolute;
+        left: -50px;
+        top: 0;
+        z-index: var(--ws-z-1);
+    }
+    
+    #bg-img-rhs {
+        position: absolute;
+        right: -50px;
+        top: 0;
+        z-index: var(--ws-z-1);
+    }
+    
+    .bg-img-mob {
+        display: none;
+        position: absolute;
+        z-index: var(--z-1);
+    }
+    
+    #bg-img-mob-top-left {
+        left: 0;
+        top: 0;
+    }
+    
+    #bg-img-mob-top-right {
+        right: 0;
+        top: 0;
+    }
+    
+    #bg-img-mob-bottom-right {
+        right: 0px;
+        bottom: 0;
+    }
+    
+    #bg-img-mob-bottom-left {
+        left: -2rem;
+        bottom: 0;
+    }
+    
+    
+    
+    .block-generic {
+        padding: var(--ws-gap-medium) 0;
+        margin: var(--ws-gap-small) 0;
+    }
+    
+    .screen {
+        padding: var(--ws-gap-small) var(--ws-gap-small) var(--ws-gap-small);
+    }
+    
+    .evidence-block {
+        background: var(--ws-bg-evidence);
+        border-radius: 5rem;
+        display: inline-block;
+        padding: var(--ws-gap-large) var(--ws-gap-huge);
+        margin: var(--ws-gap-massive) 0;
+        p {
+            color: var(--ws-text-inset);
+        }
+    }
+    
+    main {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .container {
+        width: 899px;
+        height: 663px;
+        background-color: #76daa3;
+        margin: auto;
+        position: relative;
+    }
+    
+    .content {
+        position: absolute;
+        z-index: var(--ws-z-2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    h1 {
+        font-family: ubuntutitle;
+        font-size: 4rem;
+        text-align: center;
+        padding: var(--ws-gap-huge) 0;
+        margin: var(--ws-gap-massive) 0;
+        color: var(--ws-text-evidence);
+        line-height: 3.5rem;
+    }
+    
+    h2 {
+        padding: var(--ws-gap-medium) 0;
+        margin: var(--ws-gap-medium) 0;
+    }
+    
+    h3 {
+        padding: var(--ws-gap-medium) 0;
+        margin: var(--ws-gap-medium) 0;
+    }
+    
+    p {
+        padding: var(--ws-gap-small) 0;
+        margin: 0;
+        text-align:center;
+        // font-weight: bold;
+    }
+    
+    p.descript {display: block;}
+    p.descript.mob {display: none;}
+    
+    a {
+        text-decoration: underline;
+    
+        &:hover {
+            color: var(--ws-text-evidence);
+        }
+    }
+
+    .widget-linkedin {
+        background: var(--ws-bg-widget);
+        padding: var(--ws-gap-medium);
+        color: var(--ws-text-inset);
+        border-radius: 0.2rem;
+        font-size: 0.8rem;
+    }
+
+    @media only screen and (max-width: 600px) {
+        padding: 0 24px;
+        background-color: #76daa3;
+        
+    
+        #bg-img-lhs {
+            display: none;
+        }
+        #bg-img-rhs {
+            display: none;
+        }
+        #bg-img-mob {
+            display: block;
+        }
+        #logo-img {
+            display: none;
+        }
+        #logo-img-mob {
+            display: block;
+        }
+    
+        .bg-img-mob {
+            display: block;
+        }
+    
+        main {
+            min-height: none;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+    
+        .content {
+            position: relative;
+            top:-2rem;
+        }
+    
+        h1 {
+            font-size: 2.5rem;
+            line-height: 2.5rem;
+            margin: var(--ws-ws-gap-large) 0;
+        }
+    
+        p {
+            font-size:1rem!important;
+            line-height: 1.4rem!important;
+        }
+    
+        p.descript.mob {display: block;}
+        p.descript {display: none;}
+    }
+}
+

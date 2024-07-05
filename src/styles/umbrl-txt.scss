@@ -1,0 +1,59 @@
+body {
+    font-size: 16px !important;
+}
+
+body   h2 {
+    // 22
+    font-size: 1.4rem!important;
+    font-weight: 600!important;
+    font-family: var(--font-inter)!important;
+}
+
+body   h3 {
+    //20
+    font-size: 1.25rem!important;
+    font-weight: 500!important;
+    font-family: var(--font-inter)!important;
+}
+
+body   h4 {
+    // 18
+    font-size: 1.1rem!important;
+    font-weight: 400!important;
+    font-family: var(--font-inter)!important;
+}
+
+body   p, body   li {
+    // 16
+    font-size: 1rem!important;
+    font-weight: 400!important;
+    font-family: var(--font-inter)!important;
+    line-height: 1.5rem;
+}
+
+body   label {
+    font-size: 1.1rem!important;
+    font-weight: 400!important;
+    font-family: var(--font-inter)!important;
+}
+
+body   button, body a {
+    // 18
+    font-size: 1.1rem!important;
+    font-weight: 500!important;
+    font-family: var(--font-inter)!important;
+}
+
+body   input {
+    // 14
+    font-size: 0.9rem!important;
+    font-weight: 400!important;
+    font-family: var(--font-inter)!important;
+}
+
+body   .note {
+    // 14
+    font-size: 0.9rem!important;
+    font-weight: 400!important; 
+    font-family: var(--font-inter)!important;
+}
