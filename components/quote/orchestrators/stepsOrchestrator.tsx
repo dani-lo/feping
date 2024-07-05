@@ -29,6 +29,8 @@ export const StepsOrchestratorComponent = ({ steps, onScreenUnvalid, onScreenVal
     txtNext: string;
 }) => {
 
+    
+
     const [laststep, setLaststep] = useState(0)
     const [expanded, setExpanded] = useState<number | null>(null)
 
@@ -69,6 +71,7 @@ export const StepsOrchestratorComponent = ({ steps, onScreenUnvalid, onScreenVal
                         key={ stepId }
                         expand={ () => setExpanded(i) }
                         onConfirm={ () => {
+
                             if (!editable) {
                                 setLaststep(i + 1)
                             }

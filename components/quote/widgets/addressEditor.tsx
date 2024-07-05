@@ -17,6 +17,8 @@ import { Patterns, validNumber, validPostcode } from "@/src/util/validators";
 import { LocalStateContext } from "@/src/stores/contexts/localStateContext";
 import { populateOptsFromACloud } from "@/src/models/address";
 import { debounce } from "@/src/util/debounce";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAddressDetails } from "@/src/api/address";
 
 const AddressEditor = ({ onValid, onUnvalid, screendatavalid, formChanged } : {
     onValid: (data: { apikey: string; val: FormDataItem | null; }[]) => void;
@@ -47,55 +49,44 @@ const AddressEditor = ({ onValid, onUnvalid, screendatavalid, formChanged } : {
             formChanged(changed)
         }
 
-        
+
     }, [screendatavalid])
 
     useEffect(() => {
         if (state?.postcode && validPostcode(state?.postcode) && state?.houseNum && validNumber(state?.houseNum)) {
-            debounce(() => fetchAddresses(), 2000)()
+            debounce(() => fetchAddresses(), 1000)()
         }
     }, [state?.houseNum, state?.postcode])
 
+    const { data: addressDetailsReponse } = useQuery({
+        queryKey: ['addressDetails', state.selectedAcloudId],
+        queryFn: () => fetchAddressDetails(state.selectedAcloudId),
+        enabled: !!state.selectedAcloudId,
+        staleTime: Infinity
+    })
+
     useEffect(() => {
-        const fetchAddressDetails = async () => {
-            try {
-                const response = await fetch(`${ config.url.addressDetails }/${state.selectedAcloudId}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-api-key": config.acloud.key,
-                        "x-client-id": config.acloud.clientId
-                    }
-                })
 
-                if (response?.ok && state.selectedAcloudId) {
+        if (addressDetailsReponse) {
+        const addressDetails = addressDetailsReponse.data
 
-                    const data = await response.json()
 
-                    const addressDetails = data["data"]
-                    const populatedOpts = addressDetails ? populateOptsFromACloud(screenDefinition.opts, formDataManager.storageKey ?? '', addressDetails, state.selectedAcloudId) as QuoteOpt[] : null
-                    
-                    const storable = (populatedOpts ?? []).map(o => {
-                        return {
-                            apikey: o.apikey,
-                            val: o.value ?? ''
-                        }
-                    })
+        const populatedOpts = state.selectedAcloudId && addressDetails ? populateOptsFromACloud(screenDefinition.opts, formDataManager.storageKey ?? '', addressDetails, state.selectedAcloudId) as QuoteOpt[] : null
 
-                    onValid(storable)
-
-                }
-            } catch (error) {
-                console.log(error)
+        const storable = (populatedOpts ?? []).map(o => {
+            return {
+                apikey: o.apikey,
+                val: o.value ?? ''
             }
-        }
+        })
 
-        if (state.selectedAcloudId) {
-            fetchAddressDetails()
-        } else {
+        onValid(storable)
+
+        if (!state.selectedAcloudId) {
             onUnvalid()
         }
-    }, [state.selectedAcloudId])
+    }
+    }, [state.selectedAcloudId, addressDetailsReponse])
 
     const { register, formState: {errors} } = useForm({ mode: "onBlur"})
 
@@ -124,7 +115,7 @@ const AddressEditor = ({ onValid, onUnvalid, screendatavalid, formChanged } : {
 
             }
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
     }
 

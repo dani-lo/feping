@@ -69,10 +69,10 @@ export const thingsCategories = {
 }
 
 export const SelectedThingsComponent = ( { selectedThings, onDeleteThing, mode, onSetOutside }: { 
-        selectedThings:  string | ThingDoc[];
-        onDeleteThing: ((thing: ThingDoc) => void) | null;
+        selectedThings:  string | Thing[];
+        onDeleteThing: ((thing: Thing) => void) | null;
         mode: StepMode;
-        onSetOutside ?: ((thing: ThingDoc) => void) | null;
+        onSetOutside ?: ((thing: Thing) => void) | null;
     }) => {
 
     if (!Array.isArray(selectedThings) || !selectedThings?.length) {
@@ -128,7 +128,7 @@ export const SelectedThingsComponent = ( { selectedThings, onDeleteThing, mode, 
 
 export const ThingsPickerComponent = ({ onSaveThing, disableAnimation, forceOutside }: { 
     // categories: CategoriesTree[];
-    onSaveThing: (t: ThingDoc) => void;
+    onSaveThing: (t: Thing) => void;
     disableAnimation ?: boolean;
     forceOutside ?: boolean;
 }) => {
@@ -204,7 +204,12 @@ export const ThingsPickerComponent = ({ onSaveThing, disableAnimation, forceOuts
                             setEditThing(null)
 
                             if (t.description && t.value) {
-                                onSaveThing(t)
+                                onSaveThing(new Thing({
+                                    category: t.category,
+                                    insideAndOutside: t.insideAndOutside,
+                                    value: t.value,
+                                    description: t.description
+                                }))
                             }
                         }}
                         onEditCancel={ () => {
@@ -221,10 +226,10 @@ export const ThingsPickerComponent = ({ onSaveThing, disableAnimation, forceOuts
 }
 
 const ThingEditorComponent = ({ catLabel, thing, onEditSave, onEditCancel }: { 
-    thing: ThingDoc | null;
+    thing: Thing | null;
     catLabel: string;
     onEditCancel: () => void;
-    onEditSave: (t: ThingDoc) => void;
+    onEditSave: (t: Thing) => void;
 }) => {
 
     const [outside, setOutside] = useState(false)
@@ -278,12 +283,17 @@ const ThingEditorComponent = ({ catLabel, thing, onEditSave, onEditCancel }: {
                 />
                 <BtnComponentB
                     type={ UmbrlButton.CONFIRM }
-                    onClick={() => onEditSave({
-                        ...thing,
-                        description: desc,
-                        value: val,
-                        insideAndOutside: outside
-                    })}
+                    onClick={() =>{ 
+
+                        const t = new Thing({
+                            category: thing.category,
+                            description: desc,
+                            value: val,
+                            insideAndOutside: outside
+                        })
+
+                        onEditSave(t)
+                    }}
                     label="Ok"
                     data-testid="edit-picked-thing-save"
                     disabled={ !desc || !val || val === 0 }

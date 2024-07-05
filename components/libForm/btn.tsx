@@ -30,7 +30,7 @@ export const BtnComponent = ({ type, size, onClick, label, testid, disabled, lin
     let variant = 'solid' as 'solid' | 'bordered'
     let color = (isSecondary ? 'secondary' :  'primary') as 'primary' | 'secondary'
 
-    switch(true) {
+    switch (true) {
 
         case type === UmbrlButton.CONFIRM:
             dynIcon = 'fa fa-check'
@@ -99,7 +99,7 @@ export const BtnComponent = ({ type, size, onClick, label, testid, disabled, lin
 }
 
 
-export const BtnComponentB = ({ type, size, onClick, label, testid, disabled, link, grow, asSecondary, icon }: {
+export const BtnComponentB = ({ type, size, onClick, label, testid, disabled, link, grow, asSecondary, icon, className }: {
     type: UmbrlButton;
     onClick : () => void;
     label: string;
@@ -110,6 +110,7 @@ export const BtnComponentB = ({ type, size, onClick, label, testid, disabled, li
     grow ?: boolean;
     asSecondary ?: boolean;
     icon ?: string;
+    className ?: string;
 }) => {
 
     let dynIcon = null
@@ -145,7 +146,7 @@ export const BtnComponentB = ({ type, size, onClick, label, testid, disabled, li
             color = 'secondary'
             variant = 'bordered'
             iconPos = 'before'
-    
+
 
             break
 
@@ -163,7 +164,7 @@ export const BtnComponentB = ({ type, size, onClick, label, testid, disabled, li
         //     break
     }
 
-    let cName = 'umbrl-btn'
+    let cName = `${className} umbrl-btn`
 
     if (grow) {
         cName = `${ cName } grow`
@@ -186,7 +187,7 @@ export const BtnComponentB = ({ type, size, onClick, label, testid, disabled, li
     }
 
     const useIcon = icon ?? dynIcon
-    
+
     return <Button
         size={ size ?? 'lg' }
         as={ link ? Link : undefined }

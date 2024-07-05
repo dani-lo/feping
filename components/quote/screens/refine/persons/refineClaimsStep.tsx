@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useContext } from "react"
+import { useEffect, useState, useContext, useReducer } from "react"
 
 import { FormOrchestrator } from "@/components/quote/orchestrators/formOrchestrator"
 import { StepFooterComponent } from "@/components/quote/orchestrators/stepsOrchestrator"
@@ -22,8 +22,12 @@ import { LocalStateContext } from "@/src/stores/contexts/localStateContext"
 import { StepResumeComponent } from "@/components/quote/widgets/stepResume"
 import { useFormApiDataSync } from "@/src/hooks/useFormApiDataSync"
 import { PillComponent } from "@/components/quote/widgets/pill"
+import { useUmbrlForm } from "@/src/hooks/useUmbrlForm"
+import { ClaimsEditorActions, claimsEditorStateReducer, defaultClaimsEditorState } from "@/src/stores/reducers/claimsDataReducer"
+import { uiStateSidebar } from "@/src/stores/jotai/uiState"
+import { useAtom } from "jotai"
 
-export const apisection = 'main_policy_holder'
+export const apisection = 'main_policy_holder' 
 
 export const stepOpts: QuoteOpt[] = [
     {
@@ -77,24 +81,15 @@ export const RefineClaimsStepComponent =  ({
         setStepUnvalid: (s: string) => void;
 }) => {
 
-    const [madeclaims, setMadeclaims] = useState<boolean | null>(null)
     const [mode, setMode] = useState(StepMode.DISPLAY)
-    const [claims, setClaims] = useState<Claim[]>([])
     const [addmore, setAddmore] = useState(false)
+
+    const [sidebar, setSidebar] = useAtom(uiStateSidebar)
 
     const localCtx = useContext(LocalStateContext)
     const qqCtx = useContext(QQResponseStateContext)
 
-    const formDataManager = new UmbrlForm(
-        stepOpts, 
-        apisection, 
-        localCtx?.state ?? null, 
-        localCtx?.dispatch  ?? null
-    )
-
-    useFormApiDataSync(qqCtx?.state ?? null, formDataManager, stepOpts)
-
-    // const ready = formDataManager.ready() && qqCtx?.state && Object.keys(qqCtx.state).length
+    const [claimsReducerState, dispatchToClaimsReducer] = useReducer(claimsEditorStateReducer, defaultClaimsEditorState)
 
     useEffect(() => {
         if (!expanded && editable) {
@@ -102,29 +97,18 @@ export const RefineClaimsStepComponent =  ({
         }
     }, [expanded, editable])
 
-    useEffect(() => {
+    const formDataManager = useUmbrlForm(stepOpts, apisection, localCtx, qqCtx)
 
-        const existingClaims = formDataManager.keyVal('previous_claims') as ClaimDoc[]
-        const madeClaims = formDataManager.keyVal('has_claims') as ClaimDoc[]
+    if (!formDataManager) {
+        return null
+    }
 
-        setClaims(existingClaims?.map(d => new Claim(d)) ?? [])
-        setMadeclaims(!!madeClaims)
-
-    }, [])
-
-    // useEffect(() => {
-
-    //     const confirmedClaims = UmbrlForm.manualRead('main_policy_holder', null, 'claims')
-
-    //     if (![undefined, null].includes(confirmedClaims) ) {
-    //         setMadeclaims(confirmedClaims)
-    //     }
-    // }, [])
-
-
-    const resumeTitle = claims.length ? `${ claims.length } claim${ claims.length > 1 ? 's' : '' }, ${ claimsTotalString(claims) }` : 'No Past Claims'
+    const resumeTitle = claimsReducerState.claims.length ? 
+        `${ claimsReducerState.claims.length } claim${ claimsReducerState.claims.length > 1 ? 's' : '' }, ${ claimsTotalString(claimsReducerState.claims) }` : 
+        'No Past Claims'
 
     if (mode === StepMode.RESUME) {
+
         return <PillComponent
             key={ apisection }
             title={ resumeTitle }
@@ -148,189 +132,122 @@ export const RefineClaimsStepComponent =  ({
             className={ `step-current` }
             key={ apisection }
         >
-            {/* <TxtTitleSub
-                txt="Your Past Claims"
-            /> */}
             {
-            claims.length ? <div className="claim-detail">
-                {
-                     claims.map(clm => <ClaimResumeComponent
+            claimsReducerState.claims.length ? <div className="claim-detail">
+            {
+                claimsReducerState.claims.map(clm => 
+                    <ClaimResumeComponent
                         key={ clm.getUid() }
                         claim={ clm }
-                        onDeleteClaim={ (claimUid: string) => {
-
-                            const newClaims = claims.filter(c => c.getUid() !== claimUid)
-                            const storableClaimDocs = newClaims.map(c => c.toStorable()) as FormDataItem
-
-                            setClaims(newClaims)
-
-                            formDataManager.saveScreenData([
-                                {
-                                    apikey: 'previous_claims',
-                                    val: storableClaimDocs
+                        onDeleteClaim={ () => {
+                            dispatchToClaimsReducer({
+                                type: ClaimsEditorActions.REMOVE_CLAIM,
+                                payload: {
+                                    claim: clm
                                 }
-                            ], true)
-                        } }
-                    />)
-                }
-
+                            })
+                        }}
+                    />
+                )
+            }
             </div> : null
         }
-            {
-                !claims?.length ? 
-                    <>
-                    <TxtTitleSub
-                        txt="Have you made any home insurance claims in the last three years?"
-                    />
-                    {/* <RadioGroup
-                        className="pt-2"
-                        defaultValue={ madeclaims ? 'yes' : 'no' }
-                        size="sm"
-                    >
-                        <Radio
-                            value="yes"
-                            data-selected={ madeclaims === true }
+        {
+            !claimsReducerState.claims.length ? 
+                <>
+                <TxtTitleSub
+                    txt="Have you made any home insurance claims in the last three years?"
+                />
+                {
+                !claimsReducerState.madeClaims ?
+                    <div className="step-footer">
+                        <BtnComponentB
+                            type={ UmbrlButton.GENERIC }
                             onClick={ () => {
 
-                                setMadeclaims(true)
+                                dispatchToClaimsReducer({
+                                    type: ClaimsEditorActions.MADE_CLAIMS,
+                                    payload: {
+                                        madeClaims: true
+                                    }
+                                })
 
-                                if (localCtx?.dispatch) {
-                                    UmbrlForm.manualSave(localCtx.dispatch, 'main_policy_holder', null, 'claims', true)
-                                }
-                            }}
-                        >yes</Radio>
-                        <Radio
-                            value="no"
-                            data-selected={ madeclaims === false }
+                                setSidebar(true)
+                                
+                            } }
+                            label="Yes"
+                        />
+                        <BtnComponentB
+                            type={ UmbrlButton.GENERIC }
                             onClick={ () => {
 
-                                setMadeclaims(false)
-
-                                if (localCtx?.dispatch) {
-                                    UmbrlForm.manualSave(localCtx.dispatch, 'main_policy_holder', null, 'claims', false)
-                                }
-                            }}
-                        >no</Radio>
-                    </RadioGroup> */}
-                    {
-                    !madeclaims ?
-                        <div className="step-footer">
-                            <BtnComponentB
-                                type={ UmbrlButton.GENERIC }
-                                onClick={ () => {
-
-                                    setMadeclaims(true)
-
-                                    if (localCtx?.dispatch) {
-                                        UmbrlForm.manualSave(localCtx.dispatch, 'main_policy_holder', null, 'claims', true)
+                                dispatchToClaimsReducer({
+                                    type: ClaimsEditorActions.MADE_CLAIMS,
+                                    payload: {
+                                        madeClaims: false
                                     }
-                                } }
-                                label="Yes"
-                                // grow={ true }
-                                // disabled={ !canConfirm }
-                            />
-                            <BtnComponentB
-                                type={ UmbrlButton.GENERIC }
-                                onClick={ () => {
+                                })
+                                
+                                setAddmore(false)
 
-                                    setMadeclaims(false)
+                                setMode(StepMode.RESUME)
+                                onConfirm()
+                            } }
+                            label="No"
+                        />
+                    </div>: null
+                }
+            </> : null
+        }
+        {
+            claimsReducerState.claims.length && !addmore ?
+            <div className="step-footer">
+                <BtnComponentB
+                    type={ UmbrlButton.GENERIC }
+                    label="Add another claim"
+                    onClick={() => {
+                        setAddmore(true)
+                        setSidebar(true)
+                    }}
+                />
+                <BtnComponentB
+                    type={ UmbrlButton.CONTINUE }
+                    label="Save and continue"
+                    onClick={() => {
 
-                                    if (localCtx?.dispatch) {
-                                        UmbrlForm.manualSave(localCtx.dispatch, 'main_policy_holder', null, 'claims', false)
-                                    }
+                        const storableClaimDocs = claimsReducerState.claims.map(c => c.toStorable()) as FormDataItem
 
-                                    setAddmore(false)
-                                    setMode(StepMode.RESUME)
-                                    onConfirm()
-                                } }
-                                label="No"
-                                // grow={ true }
-                                // disabled={ !canConfirm }
-                            />
-                        </div>: null
-                    }
-                    
-                </> : null
-            }
-            {
-                claims?.length && !addmore ?
-                <div className="pb-4">
-                    <BtnComponentB
-                        type={ UmbrlButton.GENERIC }
-                        label="Add another claim"
-                        onClick={() => setAddmore(true)}
-                    />
-                </div>
-                : null
-            }
-            {
-                addmore || (madeclaims && !claims.length) ?
-                    <ClaimsEditorComponent
-                        claims={ claims }
-                        onAddClaim={ (claim: Claim) => {
+                        if (localCtx?.dispatch) {
+                            UmbrlForm.manualSave(
+                                localCtx.dispatch,
+                                'main_policy_holder',
+                                'applicant_details',
+                                'previous_claims',
+                                storableClaimDocs,
+                                'SKIP_STORAGE'
+                            )
+                        }
+                        
+                        setAddmore(false)
 
-                            const newClaims = [...claims, claim]
-                            const storableClaimDocs = newClaims.map(c => c.toStorable()) as FormDataItem
-
-                            setClaims(newClaims)
-
-                            formDataManager.saveScreenData([
-                                {
-                                    apikey: 'previous_claims',
-                                    val: storableClaimDocs
-                                }
-                            ], true)
-
-                            setAddmore(false)
-                        }}
-                        onDeleteClaim={ (claimUid: string) => {
-
-                            const newClaims = claims.filter(c => c.getUid() !== claimUid)
-                            const storableClaimDocs = newClaims.map(c => c.toStorable()) as FormDataItem
-
-                            setClaims(newClaims)
-
-                            formDataManager.saveScreenData([
-                                {
-                                    apikey: 'previous_claims',
-                                    val: storableClaimDocs
-                                }
-                            ], true)
-                        } }
-                        onCancel={() => {
-                            setAddmore(false)
-                            setMode(StepMode.RESUME)
-                            onConfirm()
-                        }}
-                    />: null
-            }
-            {/* <StepFooterComponent
-                mode={ mode }
-                disabledConfirm={ madeclaims === null ||  (madeclaims === true  && !claims.length) }
-                disabledSave={ false }
-                onConfirm={ () => {
-                    setMode(StepMode.RESUME)
-                    onConfirm()
-                }}
-                onUpdate={ () => {
-                    setMode(StepMode.EDIT)
-                }}
-                onSaveEdit={ () => {
-                    if (claims?.length) {
-                    formDataManager.saveScreenData([{
-                        apikey: 'previous_claims',
-                        val: claims.map(c => c.toStorable())
-                    }], true)
-                    }
-                    setMode(StepMode.RESUME)
-                    onConfirm()
-                } }
-                // onCancelEdit={ () => {
-                //     setMode(StepMode.DISPLAY)
-                // }}
-                onCancelEdit={ null }
-                stepactions={ stepactions }
-            /> */}
+                        setMode(StepMode.RESUME)
+                        onConfirm()
+                    }}
+                />
+            </div>
+            : null
+        }
+        {
+            // addmore || (claimsReducerState.madeClaims && !claimsReducerState.claims.length) ?
+                <ClaimsEditorComponent
+                    claimsDispatch={ dispatchToClaimsReducer }
+                    onSaveClaim={ () => {
+                        setAddmore(false)
+                        setSidebar(false)
+                    } }
+                />
+                //: null
+        }
     </li>
 
 }

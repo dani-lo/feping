@@ -10,6 +10,7 @@ import "@/src/styles/icon.scss"
 import "@/src/styles/layout.scss"
 import "@/src/styles/list.scss"
 import "@/src/styles/responsive.scss"
+import '@/src/styles/sidebar.scss'
 import "@/src/styles/text.scss"
 import "@/src/styles/twoverwrites.scss"
 import "@/src/styles/umbrl-txt.scss"

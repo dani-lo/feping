@@ -11,16 +11,17 @@ interface Props {
     children: any;
     onClick ?: () => void;
     active ?: boolean;
+    policyPill?: boolean;
     testid?: string;
 }
 
-export const PillComponent = ({title, icons, onAction, expanded, children, active, onClick, testid }: Props) => {
+export const PillComponent = ({title, icons, onAction, expanded, children, active, onClick, policyPill, testid }: Props) => {
 
-    const cname = `pill-widget${ expanded ? ' expanded' : '' }${ onClick ? ' clickable' : '' }${ active ? ' active' : '' }`
+    const cname = `pill-widget${ expanded ? ' expanded' : '' }${ onClick ? ' clickable' : '' }${ active ? ' active' : '' } ${ policyPill ? 'policy-pill' : '' }`
 
-    return <div 
+    return <div
         data-testid={ testid ?? undefined }
-        className={ cname } 
+        className={ cname }
         onClick={ onClick ? onClick : () => void 0 }
     >
         <div className={ `pill-title${icons?.action ? ' fxrow' : '' }` }>
@@ -28,8 +29,8 @@ export const PillComponent = ({title, icons, onAction, expanded, children, activ
             {
                 icons?.action && onAction ?
                 <div className="pill-icon">
-                    <i 
-                        className={  expanded ? 'fa fa-times' : icons.action } 
+                    <i
+                        className={  expanded ? 'fa fa-times' : icons.action }
                         onClick={ onAction }
                     />
                 </div>: null

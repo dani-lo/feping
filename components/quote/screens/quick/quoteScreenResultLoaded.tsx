@@ -33,7 +33,7 @@ export const QuoteScreenResultLoadedComponent = ({ screenDefinition }: { screenD
 
     const products = useProducts()
    
-    const [refined, setRefining] = useQuoteRefinement({
+    const [refined, refining, setRefining] = useQuoteRefinement({
         quoteState: ctxQuickQuote?.state ?? null,
         quoteDispatch: ctxQuickQuote?.dispatch ?? null,
         localState: localCtx?.state ?? null,
@@ -158,7 +158,7 @@ export const QuoteScreenResultLoadedComponent = ({ screenDefinition }: { screenD
                 onNext={ () =>  {
                     if (screendatavalid !== null) {
 
-                        formDataManager.saveScreenData(screendatavalid, true)
+                        formDataManager?.saveScreenData(screendatavalid, true)
                         // @ts-ignore
                         setRefining()
                     }

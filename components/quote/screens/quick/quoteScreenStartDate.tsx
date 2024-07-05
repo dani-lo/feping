@@ -28,7 +28,11 @@ export const QuoteScreenCoverStartDateComponent = ({ screenDefinition, mode }: {
         setScreendataValid
     )
 
-    return <>
+    if (!formDataManager) {
+        return null
+    }
+
+return <>
         <div className={`${mode === ScreenMode.NORMAL ? 'screen screen-quote' : 'screen-edit'}`}>
                 {
                     mode === ScreenMode.NORMAL ?

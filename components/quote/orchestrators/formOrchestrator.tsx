@@ -47,7 +47,7 @@ export const FormOrchestrator = ({ opts, onValid, formDataManager, withFade, onU
     const propagateValid = (state: FormOrchestratorState) => {
 
         if (state) {
-            
+
             const toSave = Object.keys(state).map(apikey => {
                 return {
                     apikey,
@@ -64,7 +64,7 @@ export const FormOrchestrator = ({ opts, onValid, formDataManager, withFade, onU
     */
     useEffect(() => {
 
-        const fromOptsState = stateFromOpts(opts, formDataManager) 
+        const fromOptsState = stateFromOpts(opts, formDataManager)
 
         setFormOrchestratorState(fromOptsState)
 
@@ -93,8 +93,8 @@ export const FormOrchestrator = ({ opts, onValid, formDataManager, withFade, onU
                 onUnvalid()
             }
 
-        } 
-        
+        }
+
     }, [Object.keys(errors ?? {}).length, lastedit])
 
     const onInputChange = (value: string, apikey: string) => {
@@ -303,6 +303,8 @@ export const FormOrchestrator = ({ opts, onValid, formDataManager, withFade, onU
                                     }
                                 }}
                                 label={opt.title ?? ''}
+                                tomorrowBtn={!!opt.tomorrowBtn}
+                                nextWeekBtn={!!opt.nextWeekBtn}
                             />
                         </div>
 

@@ -1,7 +1,7 @@
-import { Slider } from "@nextui-org/react"
+import { CircularProgress, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Slider } from "@nextui-org/react"
 import { PolicyType } from "@/src/models/policy"
 import { FormDataItem, UmbrlForm } from "@/src/models/form"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { QuoteOpt } from "@/src/stores/staticQuoteJourneyDefinition"
 
 import { formatCurrency } from "@/src/util/currency";
@@ -11,6 +11,10 @@ import { useAtom } from "jotai"
 import { uiStateAboutModal } from "@/src/stores/jotai/uiState"
 import { BtnComponent, BtnComponentB, UmbrlButton } from "@/components/libForm/btn"
 import { DefaultCoverageExcesses } from "@/src/models/excess"
+import { LocalStateContext } from "@/src/stores/contexts/localStateContext"
+import { QQResponseStateContext } from "@/src/stores/contexts/quickQuoteStateContext"
+import { useQuoteRefinement } from "@/src/hooks/useQuoteRefinement"
+import { refineExcesssPatchDoc } from "@/src/api/patchers/excess"
 
 export interface ExcessOptData {
     apikey: string;
@@ -18,7 +22,88 @@ export interface ExcessOptData {
     val: FormDataItem | null;
 }
 
-export const ExcessesComponent = ({ policySelected, onContentsExcessChange, onBuildingsExcessChange, buildingExcess, contentsExcess }: {
+export const ExcessesEditorComponent = ({ policySelected, editxcs, setEditxc, buildingExcess, setBuildingExcess, contentsExcess, setContentsExcess}: {
+    policySelected: PolicyType | null;
+    editxcs: boolean;
+    setEditxc: (v: boolean) => void;
+    buildingExcess: number;
+    setBuildingExcess: (n: number) => void;
+    setContentsExcess:(n: number) => void;
+    contentsExcess:   number;
+
+
+}) => {
+
+    const localCtx = useContext(LocalStateContext)
+    const ctxQuickQuote = useContext(QQResponseStateContext)
+
+    // const [buildingExcess, setBuildingExcess] = useState(0)
+    // const [contentsExcess, setContentsExcess] = useState(0)
+
+    const [refined, refining,  setRefining] = useQuoteRefinement({
+        quoteState: ctxQuickQuote?.state ?? null,
+        quoteDispatch: ctxQuickQuote?.dispatch ?? null,
+        localState: localCtx?.state ?? null,
+        localDispatch: localCtx?.dispatch ?? null,
+        patchFn: refineExcesssPatchDoc,
+        testing: true
+    })
+
+    return <Modal
+        isOpen={!!editxcs}
+        placement="center"
+        onOpenChange={ () => setEditxc(!editxcs)}
+        isDismissable={ false }
+    >
+        <ModalContent>
+            <ModalHeader className="flex flex-col gap-1">Edit excess</ModalHeader>
+            <ModalBody>
+            <ExcessesSlidersComponent
+                policySelected={ policySelected }
+                onBuildingsExcessChange={ (d: ExcessOptData[]) => {
+
+                    const building = d.find(item => item.subsection === 'buildings_coverage') ?? null
+                    const buildingEcxcessNew = Number(building?.val) ?? 0
+
+                    setBuildingExcess(buildingEcxcessNew)
+
+                    if (localCtx?.dispatch && buildingEcxcessNew) {
+                        UmbrlForm.manualSave(localCtx.dispatch, 'policy', 'buildings_coverage', 'voluntary_excess', buildingEcxcessNew)
+                    }
+                }}
+                onContentsExcessChange={ (d: ExcessOptData[]) => {
+
+                    const contents = d.find(item => item.subsection === 'contents_coverage') ?? null
+                    const contentsExcessNew = Number(contents?.val) ?? 0
+
+                    setContentsExcess(contentsExcessNew)
+
+                    if (localCtx?.dispatch && contentsExcessNew) {
+                        UmbrlForm.manualSave(localCtx.dispatch, 'policy', 'contents_coverage', 'voluntary_excess', contentsExcessNew)
+                    }
+                }}
+                buildingExcess={ buildingExcess }
+                contentsExcess={ contentsExcess }
+            />
+            </ModalBody>
+            <ModalFooter>
+                {
+                    refining ?
+                    <div className="fxrow fxrow-center"><CircularProgress /></div>:
+                    <BtnComponentB
+                        label="Update quote price"
+                        type={ UmbrlButton.UPDATE }
+                        onClick={ () => setRefining() }
+                    />
+                }
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+}
+
+
+
+export const ExcessesSlidersComponent = ({ policySelected, onContentsExcessChange, onBuildingsExcessChange, buildingExcess, contentsExcess }: {
     policySelected: PolicyType | null;
     onContentsExcessChange: (d: ExcessOptData[]) => void;
     onBuildingsExcessChange: (d: ExcessOptData[]) => void;

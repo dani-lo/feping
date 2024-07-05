@@ -70,7 +70,7 @@ const QuoteRefineContentsPage = () => {
     const offer = ctxQuickQuote?.state && products ? currentOfferByProduct(ctxQuickQuote?.state, products) : null
     // const boostedVal = useQuotePremiumBoost(offer?.premium ?? 0)
 
-    const [refined, setRefining] = useQuoteRefinement({
+    const [refined, refining, setRefining] = useQuoteRefinement({
         quoteState: ctxQuickQuote?.state ?? null,
         quoteDispatch: ctxQuickQuote?.dispatch ?? null,
         localState: localCtx?.state ?? null,

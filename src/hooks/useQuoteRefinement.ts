@@ -7,30 +7,48 @@ import { LocalState, LocalStateDispatch } from "../stores/contexts/localStateCon
 import { useAtom } from "jotai";
 import { uiLoading } from "../stores/jotai/uiState";
 import { UmbrlForm } from "../models/form";
+import { useMutation } from "@tanstack/react-query";
+import { useError } from "./useError";
 
-export const useQuoteRefinement = ({ 
-        quoteState, 
-        quoteDispatch, 
+export const useQuoteRefinement = ({
+        quoteState,
+        quoteDispatch,
         localState,
         localDispatch,
         patchFn,
         testing
-    }: { 
-        quoteState: QuoteState | null; 
-        quoteDispatch: QuoteDispatch | null; 
+    }: {
+        quoteState: QuoteState | null;
+        quoteDispatch: QuoteDispatch | null;
         localState: LocalState | null;
         localDispatch: LocalStateDispatch | null;
         patchFn:  (apiQuoteDoc: any, locState: LocalState) => jiff.JSONPatch;
         testing ?: boolean;
-    }) => {
-    
+    }): [boolean, boolean, () => void] => {
+
     const [refined, setRefined] = useState(false)
     const [refining, setRefining] = useState(false)
 
     const [_, setUiloading] = useAtom(uiLoading)
-    
+
+    const [err, setErr] = useError()
+
+
+    const { data: response, mutateAsync: refineQuickQuoteMutation } = useMutation({
+        mutationFn: ({patchDoc, quoteId}: {patchDoc: any, quoteId: string}) => refineQuickQuote(patchDoc, quoteId),
+        // mutationKey: ['refineQuickQuote', patchDoc],
+        onSuccess: (data) => {
+            if(typeof data.error === 'boolean') {
+                // @ts-ignore
+                setErr(data.message)
+            } else if (data.error) {
+                throw new Error(data.error.message)
+            }
+        }
+    })
+
     useEffect(() => {
-        
+
         let to: any
 
         if (refining && quoteState && quoteDispatch && localState) {
@@ -41,31 +59,40 @@ export const useQuoteRefinement = ({
 
                 // @ts-ignore
                 const quoteId = localState.quote.uuid
-                
-                const res = await refineQuickQuote(patchDoc, quoteId)
 
-                // @ts-ignore
-                const quoteUidNew = res.uuid
+                await refineQuickQuoteMutation({patchDoc, quoteId})
+                // const res = await refineQuickQuote(patchDoc, quoteId)
 
-                if (!res.error) {
+                //  @ts-ignore
+                const res = response ? response.data as QuoteState : null
 
-                    if (typeof quoteUidNew === 'string' && localDispatch && quoteId !== quoteUidNew) {
-                        UmbrlForm.manualSave(localDispatch, 'quote', null, 'uuid', quoteUidNew)
+                if (res) {
+
+                    console.log('res', res)
+
+                    // @ts-ignore
+                    const quoteUidNew = res.uuid;
+
+                    if (!res.error) {
+
+                        if (typeof quoteUidNew === 'string' && localDispatch && quoteId !== quoteUidNew) {
+                            UmbrlForm.manualSave(localDispatch, 'quote', null, 'uuid', quoteUidNew)
+                        }
+
+                        quoteDispatch({ type: "SET_QQ_RESPONSE", payload: res})
                     }
-        
-                    quoteDispatch({ type: "SET_QQ_RESPONSE", payload: res})
-                }
-    
-                setRefined(true)
 
-                setTimeout(() => {
-                    setUiloading(false)
-                }, 1000)
+                    setRefined(true)
+
+                    setTimeout(() => {
+                        setUiloading(false)
+                    }, 1000)
+                }
             }
 
             console.log('----------------- PATCHDOC ------------------')
             console.log(patchDoc)
-            
+
             if (patchDoc && patchDoc.length) {
 
                 if (testing) {
@@ -73,17 +100,17 @@ export const useQuoteRefinement = ({
                     refineQuote()
 
                 } else {
-    
+
                     // TODO this is tmp, remove when we uncomment "refineQuote()"
                     setRefined(true)
-    
+
                     setTimeout(() => {
                         setUiloading(false)
                     }, 2000)
-                } 
+                }
             } else {
                 setRefined(true)
-    
+
                 setTimeout(() => {
                     setUiloading(false)
                 }, 2000)
@@ -94,7 +121,7 @@ export const useQuoteRefinement = ({
 
         // return () => to && clearTimeout(to)
 
-    }, [refining])
+    }, [refining, response])
 
-    return [refined, () => setRefining(true) ]
+    return [refined, refining,  () => setRefining(true) ]
 }

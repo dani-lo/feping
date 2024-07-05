@@ -85,7 +85,7 @@ export const QuoteScreenPropertyComponent = ({ screenDefinition, mode }: {
                         screenValid={!!screendatavalid}
                         onNext={() => {
                             if (screendatavalid !== null) {
-                                formDataManager.saveScreenData(screendatavalid, true)
+                                formDataManager?.saveScreenData(screendatavalid, true)
                             }
                         }}
                     /> 
@@ -95,7 +95,7 @@ export const QuoteScreenPropertyComponent = ({ screenDefinition, mode }: {
                     screenValid={!!screendatavalid}
                     onNext={() => {
                         if (screendatavalid !== null) {
-                            formDataManager.saveScreenData(screendatavalid, true)
+                            formDataManager?.saveScreenData(screendatavalid, true)
                         }
                     }}
                     disabled={!addressEditorFormChanged}

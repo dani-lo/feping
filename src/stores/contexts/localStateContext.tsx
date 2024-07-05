@@ -9,13 +9,13 @@ enum LocalStateActionType {
 
 export type LocalState = { [k: string]: FormDataItem | LocalState }
 
-export type LocalStateDispatchPayload = { key: string; dataTree: LocalState } | { key: string; dataTree: LocalState }[]
+export type LocalStateDispatchPayload = { key: string; dataTree: LocalState; skipStorage?: 'SKIP_STORAGE' } | { key: string; dataTree: LocalState; skipStorage?: 'SKIP_STORAGE' }[]
 
 export type LocalStateDispatch = Dispatch<{ type: string; payload: LocalStateDispatchPayload }>
 
 interface LocalStateAction {
     type: LocalStateActionType;
-    payload: { key: string; dataTree: LocalState } | { key: string; dataTree: LocalState }[]
+    payload: { key: string; dataTree: LocalState; skipStorage?: boolean } | { key: string; dataTree: LocalState; skipStorage?: boolean }[]
 }
 
 const LocalStateContext = createContext<{ 
@@ -29,14 +29,17 @@ const localStateReducer = (state: LocalState | null, action: LocalStateAction) =
 
         case "SAVE_DATA":
 
-            const obj = action.payload as  { key: string; dataTree: LocalState }
+            const obj = action.payload as  { key: string; dataTree: LocalState; skipStorage?: boolean }
 
             const newState = {
                 ...state,
                 [obj.key]: obj.dataTree
             }
 
-            store(obj.key, obj.dataTree)
+            if (!obj.skipStorage) {
+                store(obj.key, obj.dataTree)
+            }
+            
 
             return newState
 

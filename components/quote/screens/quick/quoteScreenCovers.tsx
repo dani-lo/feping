@@ -33,7 +33,7 @@ export const QuoteScreenCoversComponent = ({ screenDefinition, mode }: {
 
     const router = useRouter()
 
-    const [refined, setRefining] = useQuoteRefinement({
+    const [refined, refining, setRefining] = useQuoteRefinement({
         quoteState: ctxQuickQuote?.state ?? null,
         quoteDispatch: ctxQuickQuote?.dispatch ?? null,
         localState: localCtx?.state ?? null,
@@ -83,6 +83,10 @@ export const QuoteScreenCoversComponent = ({ screenDefinition, mode }: {
     }
     if (policySelected === PolicyType.CONTENTS) {
         infoTxt = "The contents value is our estimate. If you think we're wrong, update the value now."
+    }
+
+    if (!formDataManager) {
+        return null
     }
 
     return <>

@@ -20,7 +20,6 @@ export const fetchProducts = async(): Promise<ProductDoc[] | UmbrlError> => {
       } else {
           return {
               error: true,
-              // @ts-ignore
               message: parsedResponse.error?.message ?? 'An error occurred',
               errorCode: parsedResponse.error?.code ?? 'No status code was returned.'
           }
@@ -37,5 +36,5 @@ export const fetchProducts = async(): Promise<ProductDoc[] | UmbrlError> => {
 }
 
 const enrichFlexProduct = () => {
-    
+
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useContext } from "react"
+import { useEffect, useState, useContext, useReducer } from "react"
 
 import { StepFooterComponent } from "@/components/quote/orchestrators/stepsOrchestrator"
 
@@ -24,6 +24,8 @@ import { useUat } from "@/src/hooks/useUat"
 import { LocalStateContext } from "@/src/stores/contexts/localStateContext"
 import { StepResumeComponent } from "@/components/quote/widgets/stepResume"
 import { PillComponent } from "@/components/quote/widgets/pill"
+import { useUmbrlForm } from "@/src/hooks/useUmbrlForm"
+import { HrisEditorActions, defaultHrisEditorState, hrisEditorStateReducer } from "@/src/stores/reducers/hrisDataReducer"
 
 export const apisection = 'policy'
 
@@ -74,25 +76,17 @@ export const RefineHighRiskItemsStepComponent = ({
         setStepUnvalid: (s: string) => void;
 }) => {
 
-    const [things, setThings] = useState<ThingDoc[]>([])
+
+
+    // const [things, setThings] = useState<ThingDoc[]>([])
     const [mode, setMode] = useState(StepMode.DISPLAY)
 
-    const [done, setDone] = useState(true)
+    const [hrisReducerState, dispatchToHrisReducer] = useReducer(hrisEditorStateReducer, defaultHrisEditorState)
 
     const localCtx = useContext(LocalStateContext)
-   
-    const formDataManager = new UmbrlForm(
-        stepOpts, 
-        apisection, 
-        localCtx?.state ?? null, 
-        localCtx?.dispatch  ?? null
-    )
+    const qqCtx = useContext(QQResponseStateContext)
 
-    // const currCoverages = CurrUserCover_UAT(udata)
-
-    // const coverageInspector = new CoverageInspector(currCoverages.highRiskItems, currCoverages.personalPossessions)
-
-    // coverageInspector.setThings(things.map(t => new Thing(t)) ?? [])
+    const formDataManager = useUmbrlForm(stepOpts, apisection, localCtx, qqCtx)
 
     useEffect(() => {
         if (!expanded && editable) {
@@ -100,51 +94,9 @@ export const RefineHighRiskItemsStepComponent = ({
         }
     }, [expanded, editable])
 
-    useEffect(() => {
-
-        const allThings = (formDataManager.keyVal('specified_high_risk_items') ?? []) as ThingDoc[]
-        
-        // console.log(allThings)
-
-        setThings(allThings)
-    }, [formDataManager.ready()])
-
-    // useEffect(() => {
-    //     if (coverageInspector.isOverCurrInside()) {
-    //         setStepUnvalid(stepId)
-    //     } else {
-    //         setStepValid(stepId)
-    //     }
-    // }, [coverageInspector.isOverCurrInside()])
-
-
-    // if (!populatedOpts) {
-    //     return null
-    // }
-
-    // formDataManager.syncQuoteDataOpts(populatedOpts)
-
-    // const insideTotalCurrent = coverageInspector.thingsTotal(false)
-
-    // const hasUnsavedThings = () => {
-
-    //     const fromStorage = formDataManager.keyVal('specified_high_risk_items')
-
-    //     const sameThingsStored = fromStorage && things?.length &&  fromStorage.length === things.length && things.reduce((acc, curr) => {
-
-    //         if (acc) {
-
-    //             const storedEqual = fromStorage.find((st: ThingDoc) => thingId(st) === thingId(curr))
-
-    //             if (storedEqual) {
-    //                 return acc
-    //             }
-    //         }
-    //         return false
-    //     }, true)
-
-    //     return things?.length && !sameThingsStored
-    // }
+    if (!formDataManager) {
+        return null
+    }
 
     if (mode === StepMode.RESUME) {
 
@@ -153,13 +105,18 @@ export const RefineHighRiskItemsStepComponent = ({
             title={ 'High Risk Items' }
             icons={ {
                 title: 'fa fa-check-circle',
-                action: null
+                action: icon
             } }
             expanded={ false }
-            onAction={ () => void 0}
+            onAction={ () => {
+                if (editable) {
+                    setMode(StepMode.DISPLAY)
+                    expand()
+                }
+            }}
         >
         {
-           (things ?? []).map(thing => {
+           (hrisReducerState.hris ?? []).map(thing => {
                 return <div 
                     className="fxrow" 
                     key={ thingId(thing) } 
@@ -180,8 +137,8 @@ export const RefineHighRiskItemsStepComponent = ({
 
     const saveThings = () => formDataManager.saveScreenData([{
         apikey: 'specified_high_risk_items',
-        val: things
-    }], true)
+        val: hrisReducerState.hris
+    }], true, 'SKIP_STORAGE')
 
     return <li
             className={ `step  step-current-single` }
@@ -190,158 +147,45 @@ export const RefineHighRiskItemsStepComponent = ({
             
             <div>
                 <SelectedThingsComponent
-                    selectedThings={ things }
-                    onDeleteThing={ (th: ThingDoc) => {
-                        const newThings = things.filter((t: ThingDoc) => {
-                            if (sameThing(t, th)) {
-                                return false
+                    selectedThings={ hrisReducerState.hris }
+                    onDeleteThing={ (th: Thing) => {
+                        dispatchToHrisReducer({
+                            type: HrisEditorActions.REMOVE_HRI,
+                            payload: {
+                                hri: th
                             }
-                            return true
                         })
 
-                        if (localCtx?.dispatch) {
-                            UmbrlForm.manualSave(localCtx.dispatch, 'policy', 'contents_coverage', 'specified_high_risk_items', newThings)
-                        }
-                        
-                        setThings(newThings)
-
                     } }
-                    onSetOutside={ (th: ThingDoc) => {
+                    onSetOutside={ (th: Thing) => {
 
-                        const newThings = things.map((t: ThingDoc) => {
-                            if (sameThing(t, th)) {
-                                return {
-                                    ...t,
-                                    insideAndOutside: !t.insideAndOutside
-                                }
+                        dispatchToHrisReducer({
+                            type: HrisEditorActions.SET_HRI_OUTSIDE,
+                            payload: {
+                                hri: th,
+                                insideAndOutside: !th.insideAndOutside
                             }
-                            return t
                         })
 
-                        if (localCtx?.dispatch) {
-                            UmbrlForm.manualSave(localCtx.dispatch, 'policy', 'contents_coverage', 'specified_high_risk_items', newThings)
-                        }
-                        
-                        setThings(newThings)
-
-                    } }
+                    }}
                     mode={ StepMode.RESUME }
                 />
               
                         <ThingsPickerComponent
-                            // categories={ Categories }
-                            onSaveThing={ (thing: ThingDoc) => {
-
-                                const newThings = [...things]
-                                newThings.push(thing)
-
-                                setThings(newThings)
+                            onSaveThing={ (thing: Thing) => {
+                                dispatchToHrisReducer({
+                                    type: HrisEditorActions.ADD_HRI,
+                                    payload: {
+                                        hri: thing
+                                    }
+                                })
                             }}
                         />
-                        
-                        {/* {
-                            hasUnsavedThings() ?
-                            <div className="block-generic">
-                                <BtnComponent
-                                    type={ UmbrlButton.SAVE }
-                                    onClick={ () => {
-                                        // setDone(true)
-                                        saveThings()
-                                    }}
-                                    label="save high-risk items"
-                                    disabled={ !hasUnsavedThings }
-                                />
-                            </div> : null
-                        } */}
-                  
-                {/* {
-                             !things?.length ?
-                            <div className="block-generic">
-                                <BtnComponent
-                                    type={ UmbrlButton.CANCEL }
-                                    onClick={ () => {
-                                        setDone(true)
-                                        saveThings()
-                                    }}
-                                    label="Continue without high-risk items"
-                                />
-                            </div> : 
-                            <div className="resume-items">
-                                <TxtNoteEvidence
-                                    txt={ `Total amount specified` }
-                                />
-                                <TxtNoteEvidence
-                                    txt={ `${ formatCurrency(insideTotalCurrent) }` }
-                                />
-                            </div>
-                } */}
-{/*                 
-                {
-                    done && coverageInspector.isOverCurrInside() && coverageInspector.upgradeInsideTo() === ProductId.FLEX ?
-                        <UpgradeToFlexComponentInside udata={ udata } /> :
-                        null
-                }
-                {
-                    done && coverageInspector.isOverCurrInside() && coverageInspector.upgradeInsideTo() === ProductId.MAX ?
-                        <UpgradeToMaxComponentInside udata={ udata } /> :
-                        null
-                }
-                {
-                    done && coverageInspector.isOverCurrInside() && coverageInspector.upgradeInsideTo() === null ?
-                        <UpgradeRefusalComponent forValuables="inside" /> :
-                        null
-                } */}
             </div>
-            {/* <div className="step-footer">
-            {
-                mode === StepMode.DISPLAY ?
-                    <>
-                        <BtnComponentB
-                            type={ UmbrlButton.CONFIRM }
-                            onClick={ () => {
-                                setMode(StepMode.RESUME)
-                                onConfirm()
-                            } }
-                            label="Correct"
-                            // disabled={ !canConfirm }
-                        />
-                        <BtnComponentB
-                            type={ UmbrlButton.UPDATE }
-                            onClick={  () => {
-                                setMode(StepMode.EDIT)
-                            } }
-                            label="Update"
-                        />
-                    </>
-                :
-                <>
-                    <BtnComponentB
-                        type={ UmbrlButton.SAVE }
-                        onClick={ () => {
-                            if (screendatavalid) {
-                                formDataManager.saveScreenData(screendatavalid, true)
-                            }
-                            setMode(StepMode.RESUME)
-                            onConfirm()
-        
-                        } }
-                        label="Save"
-                        // disabled={ !canConfirm }
-                    />
-                    <BtnComponentB
-                        type={ UmbrlButton.CANCEL }
-                        onClick={ () => {
-                            setMode(StepMode.DISPLAY)
-                        }}
-                        label="Cancel"
-                    />
-                </>
-                  
-            }
-            </div> */}
+            
             {
                 // (done) && !coverageInspector.isOverCurrInside() ?
-                done ?
+                
                     <StepFooterComponent
                         mode={ mode }
                         disabledSave={ false }
@@ -361,8 +205,8 @@ export const RefineHighRiskItemsStepComponent = ({
                             onConfirm()
                         } }
                         onCancelEdit={  null }
-                        stepactions={ stepactions(things?.length > 0) }
-                    />: null
+                        stepactions={ stepactions(hrisReducerState.hris.length > 0) }
+                    />
             }
 
     </li>

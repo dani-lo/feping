@@ -10,9 +10,10 @@ import { QuoteOptValidationRule } from '@/src/stores/staticQuoteJourneyDefinitio
 import { useHandleClickOff } from '@/src/hooks/useHandleClickOff';
 import { debounce } from '@/src/util/debounce';
 import { TxtLabel } from '../util/txt';
+import { BtnComponentB, UmbrlButton } from './btn';
 
 
-export const DateInputComponent = ({ onDateChange, selectedDate, label, validationRule, register, setError, clearErrors, errors }: {
+export const DateInputComponent = ({ onDateChange, selectedDate, label, validationRule, register, setError, clearErrors, errors, tomorrowBtn, nextWeekBtn }: {
   onDateChange: (formattedDate: string) => void;
   selectedDate: string | undefined;
   label?: string;
@@ -21,6 +22,8 @@ export const DateInputComponent = ({ onDateChange, selectedDate, label, validati
   setError?: UseFormSetError<FieldValues>;
   clearErrors?: UseFormClearErrors<FieldValues>;
   errors?: FieldErrors<FieldValues>;
+  tomorrowBtn?: boolean;
+  nextWeekBtn?: boolean;
 }) => {
 
   const ref = useRef<HTMLDivElement>(null);
@@ -59,12 +62,59 @@ export const DateInputComponent = ({ onDateChange, selectedDate, label, validati
 
   }
 
+  const getNextDays = (currentDate = new Date(), daysAhead = 1) => {
+    const nextDate = new Date(currentDate)
+    nextDate.setDate(currentDate.getDate() + daysAhead)
+    return nextDate
+  }
+
+  function getStartOfNextWeek() {
+    const now = new Date();
+    const currentDayOfWeek = now.getDay();
+    const daysUntilNextWeek = (7 - currentDayOfWeek) + 1; 
+
+    now.setHours(0, 0, 0, 0);
+
+    const startOfNextWeek = new Date(now);
+    startOfNextWeek.setDate(now.getDate() + daysUntilNextWeek);
+
+    return startOfNextWeek;
+}
+
   return <div
     className="dob-widget"
     style={{ position: 'relative' }}
     ref={ref}
   >
-    {label ? <div className="mb-2"><TxtLabel txt={label}  /></div> : null}
+    {
+      tomorrowBtn ?
+        <div>
+          <BtnComponentB
+            type={UmbrlButton.GENERIC}
+            onClick={() => {
+              onDateChange(UmbrlTime.jsDateToUmbrlString(getNextDays()))
+            }}
+            label={`Tomorrow, ${getNextDays().toLocaleDateString('en-GB', { dateStyle: 'long' })}`}
+            className="max-w-xs w-full mb-8"
+          />
+        </div>
+        : null
+    }
+    {
+      nextWeekBtn ?
+        <div>
+          <BtnComponentB
+            type={UmbrlButton.GENERIC}
+            onClick={() => {
+              onDateChange(UmbrlTime.jsDateToUmbrlString(getStartOfNextWeek()))
+            }}
+            label={`Next Week, ${getStartOfNextWeek().toLocaleDateString('en-GB', { dateStyle: 'long' })}`}
+            className="max-w-xs w-full mb-8"
+          />
+        </div>
+        : null
+    }
+    {label ? <div className="mb-2"><TxtLabel txt={label} /></div> : null}
     <div>
       <div>
         <TxtLabel txt="Day" />
@@ -129,24 +179,24 @@ export const DateInputComponent = ({ onDateChange, selectedDate, label, validati
           value={selectedDate ? UmbrlTime.umbrlStringToJsDate(selectedDate) : undefined}
           classNames='date-picker-wrapper'
           options={datePickerOptions(label, selectedDate)}
-          onChange={ debounce((date: Date) => {
+          onChange={debounce((date: Date) => {
 
-              onDateChange(UmbrlTime.jsDateToUmbrlString(date))
+            onDateChange(UmbrlTime.jsDateToUmbrlString(date))
 
-              if (setError && clearErrors) {
-                
-                const validD = customDateComponentValidation(date, validationRule)
-                
-                if (!validD) {
-                  setError('day', { type: 'manual', message: 'Date must be within 30 days' })
-                  setError('month', { type: 'manual', message: 'Date must be within 30 days' })
-                  setError('year', { type: 'manual', message: 'Date must be within 30 days' })
-                }
-                else {
-                  clearErrors()
-                }
+            if (setError && clearErrors) {
+
+              const validD = customDateComponentValidation(date, validationRule)
+
+              if (!validD) {
+                setError('day', { type: 'manual', message: 'Date must be within 30 days' })
+                setError('month', { type: 'manual', message: 'Date must be within 30 days' })
+                setError('year', { type: 'manual', message: 'Date must be within 30 days' })
               }
-            }, 10)
+              else {
+                clearErrors()
+              }
+            }
+          }, 10)
           }
           show={open}
           setShow={() => setOpen(false)}

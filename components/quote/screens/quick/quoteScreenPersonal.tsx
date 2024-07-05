@@ -36,7 +36,7 @@ export const QuoteScreenPersonalComponent = ({ screenDefinition, mode }: {
         setScreendataValid
     )
 
-    if (!localCtx?.state) {
+    if (!localCtx?.state || !formDataManager) {
         return null
     }
     

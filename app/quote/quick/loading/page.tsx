@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useContext } from "react"
+import { useEffect, useContext } from "react"
 
 import { QuoteScreenResultLoadingComponent } from "@/components/quote/screens/quick/quoteScreenResultLoading"
 
@@ -9,14 +9,13 @@ import { fetchPreQuickQuote } from "@/src/api/quote"
 import { QuoteScreen, QuoteScreenId, QuoteScreenIdToUrl, StaticQuoteJourneyDefinition } from "@/src/stores/staticQuoteJourneyDefinition"
 import { QQResponseStateContext, QuoteState } from '@/src/stores/contexts/quickQuoteStateContext'
 
-import { UmbrlError } from "@/src/types"
-
 import { useProducts } from "@/src/hooks/useProducts"
 import { useError } from "@/src/hooks/useError"
 import { useRouter } from "next/navigation"
 import { useLocalStorage } from "@/src/hooks/useLocalStorage"
 import { useMetadata } from "@/src/hooks/useMetadata"
 import { LocalStateContext } from "@/src/stores/contexts/localStateContext"
+import { useQuery } from "@tanstack/react-query"
 
 const QuickQuoteLoadingPage = () => {
 
@@ -34,25 +33,24 @@ const QuickQuoteLoadingPage = () => {
     const [_, setErr] = useError()
 
     const nextScreen = screenDefinition.sidnext
-    const nextUrl = QuoteScreenIdToUrl[nextScreen] 
+    const nextUrl = QuoteScreenIdToUrl[nextScreen]
 
     // if (!ctxQuickQuote?.state || !localCtx?.state) {
     //     return null
     // }
 
-    
+    const { data: preQuickQuote, isError: isPreQuickQuoteError } = useQuery({
+        queryKey: ['preQuickQuote'],
+        queryFn: fetchPreQuickQuote,
+    })
 
     useEffect(() => {
-            
+
         const to = async () => {
 
-            const d = await fetchPreQuickQuote()
-            
-            console.log(d)
-
-            if (d.error) {
-
-                const umbrlError = d as { errorCode: string; message: string; }
+            if (preQuickQuote && 'error' in preQuickQuote) {
+                console.log('FAIL!!!')
+                const umbrlError = preQuickQuote as { errorCode: string; message: string; }
 
                 //@ts-ignore
                 setErr({
@@ -61,9 +59,10 @@ const QuickQuoteLoadingPage = () => {
                 })
 
                 router.push(nextUrl)
-            } else {
+            } else if (preQuickQuote){
+                console.log('PASS!!!')
 
-                const { estimated_rebuild_cost, total_contents_value } = d
+                const { estimated_rebuild_cost, total_contents_value } = preQuickQuote as QuoteState
                 const quoteState = {
                     policy: {
                         buildings_coverage: {
@@ -74,22 +73,23 @@ const QuickQuoteLoadingPage = () => {
                         }
                     }
                 }
-                console.log(ctxQuickQuote)
+                console.log('ctxQuickQuote', ctxQuickQuote)
+                console.log('quoteState', quoteState)
                 ctxQuickQuote?.dispatch({ type: "SET_QQ_RESPONSE", payload: quoteState })
-                
+
                 setTimeout(() => {
                     router.push(nextUrl)
                     // console.log('TO FIRE!!!')
-                    // console.log(JSON.stringify(ctxQuickQuote?.state))   
+                    // console.log(JSON.stringify(ctxQuickQuote?.state))
                 }, 400)
-                
+
             }
         }
 
         to()
 
         // return () => to && clearTimeout(to)
-    }, [])
+    }, [preQuickQuote])
 
 
     return <>

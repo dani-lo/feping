@@ -104,7 +104,8 @@ export class UmbrlForm {
             section: string, 
             subsection: string | null, 
             apikey: string, 
-            val: FormDataItem | null) {
+            val: FormDataItem | null,
+            skipStorage ?: 'SKIP_STORAGE') {
 
         const existing = load(section)
         const newData = existing ? { ...existing } : {}
@@ -116,12 +117,13 @@ export class UmbrlForm {
         } else {
             newData[apikey] = val
         }
-
+        
         dispatcher ({
             type: 'SAVE_DATA',
             payload: {
                 key: section,
-                dataTree: newData
+                dataTree: newData,
+                skipStorage
             }
         })
     }
@@ -214,7 +216,7 @@ export class UmbrlForm {
         return tree
     }
 
-    saveScreenData (formData: StorableObj[], preserveExisting: boolean) {
+    saveScreenData (formData: StorableObj[], preserveExisting: boolean, skipStorage ?: 'SKIP_STORAGE') {
 
         const storageKey = this.storageKey
         const optsDefinition = this.opts
@@ -257,7 +259,8 @@ export class UmbrlForm {
                     type: 'SAVE_DATA',
                     payload: {
                         key: storageKey,
-                        dataTree: obj
+                        dataTree: obj,
+                        skipStorage
                     }
                 })
             }

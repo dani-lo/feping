@@ -29,6 +29,9 @@ import { mergeSubtrees } from "@/src/models/subtree"
 
 export const refinePersonsPatchDoc = (apiQuoteDoc: any, localState: LocalState) : jiff.JSONPatch => {
 
+    console.log('REFINE PATCH')
+    console.log(localState)
+
     const apiResponseMainPolicyHolderSubtree = documentSubtreeFromOpts(apiQuoteDoc, mainPolicyHolderApiSection, mainPolicyHolderOpts)
     const apiResponseJointPolicyHolderSubtree = documentSubtreeFromOpts(apiQuoteDoc, jointPolicyHolderApiSection, jointPolicyHolderOpts)
     const apiResponseResidentsSubtree = documentSubtreeFromOpts(apiQuoteDoc, residentsApiSection, residentsStepOpts)
@@ -42,6 +45,12 @@ export const refinePersonsPatchDoc = (apiQuoteDoc: any, localState: LocalState) 
     const fullLocaDoc = mergeSubtrees([mainPolicyHolderLocalData,jointPolicyHolderLocalData, residentsLocalData, claimsLocalData])
     const fullApiDoc = mergeSubtrees([apiResponseMainPolicyHolderSubtree, apiResponseJointPolicyHolderSubtree, apiResponseResidentsSubtree, apiResponseClaimsSubtree]) 
     
+    console.log('apiResponseClaimsSubtree then claimsLocalData')
+    console.log(fullLocaDoc)
+    console.log(fullApiDoc)
+
+    console.log('EXPERIMENT')
+    console.log(treePatch(apiResponseClaimsSubtree, claimsLocalData))
     
     const newPatch = treePatch(fullApiDoc, fullLocaDoc)
 

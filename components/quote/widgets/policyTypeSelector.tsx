@@ -37,7 +37,6 @@ export const PolicyTypeSelector = ({
             onSelectVal: (val: string) => void;
             mode: ScreenMode;
         }) => {
-
     const apiVals = [
         {
             "label": "Buildings and Contents cover",
@@ -75,8 +74,9 @@ export const PolicyTypeSelector = ({
                     active={ selectedApiVal === apiVal.val }
                     testid={ apiVal.val }
                     key={ apiVal.val }
+                    policyPill
                 >
-                    
+
                     <TxtPara txt={ apiVal.text } />
                     <ExpandableSection
                         aria_label= "test"
@@ -136,7 +136,7 @@ export const PolicyTypeSelector = ({
                         }
                     </RadioGroup>
                 </div>
-                
+
             </form>
         }
     </div>

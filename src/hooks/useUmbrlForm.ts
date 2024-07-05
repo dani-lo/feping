@@ -3,8 +3,6 @@ import { FormDataItem, UmbrlForm, stateFromOpts } from "../models/form"
 import { QuoteOpt } from "../stores/staticQuoteJourneyDefinition"
 import { populateOptsFromQuote } from "../models/quote"
 
-
-
 export const useUmbrlForm = (
         stepOpts: QuoteOpt[], 
         apisection: string, 
@@ -13,33 +11,9 @@ export const useUmbrlForm = (
         onValid?: (d: { apikey: string; val: FormDataItem; }[]) => void
     ) => {
 
-    const [formDataManager, setFormDataManager] = useState<UmbrlForm>(new UmbrlForm(
-        stepOpts, 
-        apisection, 
-        localCtx?.state ?? null, 
-        localCtx?.dispatch  ?? null
-    ))
+    const [formDataManager, setFormDataManager] = useState<UmbrlForm | null>(null)
+    const [syncd, setSyncd] = useState(false)
 
-    const syncStateEager = () => {
-        
-        // console.log('SYNC EAGERLY =====')
-
-        if (qqCtx?.state) {
-            
-            // console.log('A111111')
-            
-            const fullPopulatedOpts = populateOptsFromQuote(stepOpts, apisection ?? '', qqCtx?.state) as QuoteOpt[]
-            
-            // console.log(fullPopulatedOpts)
-
-            if (fullPopulatedOpts) {
-                // console.log('22222222')
-
-                formDataManager.syncQuoteDataOpts(fullPopulatedOpts, true)
-            }
-        }
-    }
-    
     useEffect(() => {
 
         const fm = new UmbrlForm(
@@ -63,13 +37,22 @@ export const useUmbrlForm = (
             onValid(toSave)
         } 
 
-        syncStateEager()
-
         setFormDataManager(fm)
+    }, [])
 
-    }, [localCtx?.state, qqCtx?.state])
+    useEffect(() => {
+        if (qqCtx?.state && formDataManager) {
+                        
+            const fullPopulatedOpts = populateOptsFromQuote(stepOpts, apisection ?? '', qqCtx?.state) as QuoteOpt[]
 
-    syncStateEager()
+            if (fullPopulatedOpts && !syncd) {
+
+                formDataManager?.syncQuoteDataOpts(fullPopulatedOpts, true)
+
+                setSyncd(true)
+            }
+        }
+    }, [formDataManager, qqCtx?.state])
 
     return formDataManager
 

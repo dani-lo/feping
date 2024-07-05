@@ -199,7 +199,7 @@
         padding: var(--gap-medium) 0;
     }
 
-   
+
 
     .fxrow {
         width: 50%;
@@ -801,7 +801,7 @@
                 color: var(--umbrl-black);
                 text-transform: capitalize;
             }
-          
+
             h4:last-child {
                 color: var(--umbrl-gray-3);
                 // font-weight: 100;
@@ -855,19 +855,19 @@
         .addon-price-section {
             background: var(--umbrl-green-dark);
 
-   
 
-        
+
+
             p, h3, h4, span, i {
                 color: var(--umbrl-secondary);
             }
-                
+
         }
 
         .addon-desc-section {
             background: var(--umbrl-green);
 
-            
+
         }
     }
 
@@ -896,7 +896,7 @@
         align-items: center;
         justify-content: center;
         background: var(--umbrl-secondary);
-        
+
         border-top-left-radius: var(--radius-big);
         border-bottom-left-radius: var(--radius-big);
 
@@ -979,6 +979,12 @@
     padding: var(--gap-big);
     transition: all 0.2s;
     margin: var(--gap-big) 0;
+    // cursor: pointer;
+
+    h3, h2, p, h4, span {
+
+        user-select: none;
+    }
 
     h3 {
         color: var(--umbrl-secondary);
@@ -1024,6 +1030,10 @@
             background: var(--umbrl-gray-4);
             color: var(--umbrl-white);
         }
+    }
+
+    &.policy-pill {
+        cursor: pointer;
     }
 }
 
@@ -1105,7 +1115,7 @@
 }
 
 .payoff-widget {
-    
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1138,7 +1148,7 @@
             color: var(--umbrl-primary);
             font-size: 1.5rem;
         }
-        
+
     }
-    
+
 }

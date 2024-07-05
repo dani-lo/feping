@@ -137,12 +137,18 @@ export const RefineRisksStepComponent = ({
     
     const formDataManager = useUmbrlForm(stepOpts, apisection, localCtx, qqCtx, setScreendataValid)
 
+    
+
     useEffect(() => {
         if (!expanded && editable) {
             setMode(StepMode.RESUME)
         }
     }, [expanded, editable])
 
+    if (!formDataManager) {
+        return null
+    }
+    
     if (mode === StepMode.RESUME) {
         // return <StepResumeComponent
         //     key={ apisection }
@@ -226,7 +232,7 @@ export const RefineRisksStepComponent = ({
                 }}
                 onSaveEdit={ () => {
                     if (screendatavalid) {
-                        formDataManager.saveScreenData(screendatavalid, true)
+                        formDataManager.saveScreenData(screendatavalid, true, 'SKIP_STORAGE')
                     }
                     setMode(StepMode.RESUME)
                     onConfirm()
@@ -263,7 +269,7 @@ export const RefineRisksStepComponent = ({
                         type={ UmbrlButton.SAVE }
                         onClick={ () => {
                             if (screendatavalid) {
-                                formDataManager.saveScreenData(screendatavalid, true)
+                                formDataManager.saveScreenData(screendatavalid, true, 'SKIP_STORAGE')
                             }
                             setMode(StepMode.RESUME)
                             onConfirm()

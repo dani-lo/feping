@@ -50,7 +50,7 @@ export const QuoteScreenAddonsComponent = ({ screenDefinition }: { screenDefinit
         setScreendataValid
     )
 
-    const [refined, setRefining] = useQuoteRefinement({
+    const [refined, refining, setRefining] = useQuoteRefinement({
         quoteState: ctxQuickQuote?.state ?? null,
         quoteDispatch: ctxQuickQuote?.dispatch ?? null,
         localState: localCtx?.state ?? null,
@@ -87,11 +87,10 @@ export const QuoteScreenAddonsComponent = ({ screenDefinition }: { screenDefinit
                     selectedOffer={ offer }
                     onValid= { (d: StorableObj[]) => {
 
-                        formDataManager.saveScreenData(d, true)
+                        formDataManager?.saveScreenData(d, true)
                         
                         setScreendataValid(d)
-                        // setRefresh(refresh + 1)
-                        
+                       
                     }}
                 />: null
             }

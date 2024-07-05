@@ -38,7 +38,7 @@ export const QuoteScreenStartComponent = ({ screenDefinition, mode }: {
 
     const nextScreen = screenDefinition.sidnext
 
-    const selected = formDataManager.keyVal(screenDefinition.opts[0].apikey ?? '')
+    const selected = formDataManager?.keyVal(screenDefinition.opts[0].apikey ?? '')
 
     useEffect(() => {
 
@@ -91,7 +91,7 @@ export const QuoteScreenStartComponent = ({ screenDefinition, mode }: {
                                     val: selectedPolicy
                                 }
                             ]
-                            formDataManager.saveScreenData(toSave, true)
+                            formDataManager?.saveScreenData(toSave, true)
                         }}
                     />
                 </div> :
@@ -108,7 +108,7 @@ export const QuoteScreenStartComponent = ({ screenDefinition, mode }: {
                             }
                         ]
 
-                        formDataManager.saveScreenData(toSave, false)
+                        formDataManager?.saveScreenData(toSave, false)
 
                         setRefresh(refresh + 1)
                     }}

@@ -44,7 +44,7 @@ const QuoteRefineBuildingPage = () => {
     
     useQuoteRetrieval({ state: ctxQuickQuote?.state ?? null, dispatch: ctxQuickQuote?.dispatch ?? null })
 
-    const [refined, setRefining] = useQuoteRefinement({
+    const [refined, refining, setRefining] = useQuoteRefinement({
         quoteState: ctxQuickQuote?.state ?? null,
         quoteDispatch: ctxQuickQuote?.dispatch ?? null,
         localState: localCtx?.state ?? null,

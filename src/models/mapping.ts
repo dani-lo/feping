@@ -2,13 +2,8 @@ import { QuoteState } from "../stores/contexts/quickQuoteStateContext"
 import { isObject } from "../util/is"
 
 const FrontendToBackendMapping = {
-    // '/property_details/building_type':'/property_details/type',
-    // '/property_details/building_age':'/property_details/year_built',
-    '/ownership_values/ownership_type':'/property_details/property_ownership',
-    // '/ownership_values/rebuild_cost':'/policy/buildings_coverage/rebuild_cost',
-    // '/ownership_values/market_value':'/policy/buildings_coverage/market_value',
     '/offer/selected_product_uuid': '/selected_product_uuid',
-    // '/toogles/BUILDINGS_LIMIT_BOOST': '/OFFER_TOOGLES/BUILDINGS_LIMIT_BOOST'
+    '/ownership_values/ownership_type':'/property_details/property_ownership'
 }
 
 

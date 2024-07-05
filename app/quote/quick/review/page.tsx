@@ -3,6 +3,7 @@
 import { QuoteScreenReviewComponent } from "@/components/quote/screens/quick/quoteScreenReview"
 import { AppHeaderComponent } from "@/components/quote/widgets/header"
 import { ScreenContainerComponent } from "@/components/quote/widgets/screenContainer"
+import { SidebarComponent } from "@/components/util/sidebar"
 
 import { useLocalStorage } from "@/src/hooks/useLocalStorage"
 import { useMetadata } from "@/src/hooks/useMetadata"
@@ -24,7 +25,6 @@ const QuickQuoteReviewPage = () => {
   return <>
     <ScreenContainerComponent>
       <div className="screen-inner-container noSidebar">
-
         <QuoteScreenReviewComponent
           screenDefinition={screenDefinition}
         />

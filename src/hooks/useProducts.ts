@@ -1,34 +1,48 @@
 import { useContext, useEffect, useState } from 'react'
 
 import { fetchProducts } from '../api/products'
-import { ProductDoc } from '../models/product'
+import { Product, ProductDoc } from '../models/product'
 import { MetadataStateContext } from '../stores/contexts/metadataStateContext'
 
 import { PRODUCTS } from '@/fixtures/products'
+import { useQuery } from '@tanstack/react-query'
 
 const useProducts = () => {
 
-    const ctx = useContext(MetadataStateContext)
+    // const ctx = useContext(MetadataStateContext)
 
-    useEffect(() => {
-        if (!ctx?.state?.products) {
+    const { data } = useQuery({
+        queryKey: ['products'],
+        queryFn: fetchProducts,
+        staleTime: Infinity
+    })
 
-            fetchProducts().then((res) => {
-            
-                if (!res.hasOwnProperty('error')) {
-                    
-                    ctx?.dispatch({ type: "SET_PRODUCTS", payload: res as ProductDoc[] })
-                    
-                    return
-                } else {
-                    console.error(res)
-                }
-            })
-        }
+    const products = data && !('error' in data) ? data.map(p => new Product(p)) : null
 
-    }, [])
+    console.log('products', products)
 
-    return ctx?.state?.products ?? null
+    // useEffect(() => {
+    //     if (!ctx?.state?.products) {
+
+    //         fetchProducts().then((res) => {
+
+    //             if (!res.hasOwnProperty('error')) {
+
+    //                 ctx?.dispatch({ type: "SET_PRODUCTS", payload: res as ProductDoc[] })
+
+    //                 return
+    //             } else {
+    //                 console.error(res)
+    //             }
+    //         })
+    //     }
+
+    // }, [])
+    // return PRODUCTS
+    return products /* as unknown as Product[] */
+
+
+    // return products ?? null
 
     // @ts-ignore
     // return PRODUCTS as ProductDoc[]

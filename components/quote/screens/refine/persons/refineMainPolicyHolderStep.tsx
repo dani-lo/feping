@@ -117,6 +117,10 @@ export const RefineMainPolicyHolderStepComponent = ({
 
     const formDataManager = useUmbrlForm(stepOpts, apisection, localCtx, qqCtx, setScreendataValid)
 
+    if (!formDataManager) {
+        return null
+    }
+
     const resumeTitle = formDataManager.keyVal('first_name') && formDataManager.keyVal('surname') ?
         `${ formDataManager.keyVal('first_name') } ${ formDataManager.keyVal('surname') }` :
         'No Policy Holder'
@@ -219,7 +223,7 @@ export const RefineMainPolicyHolderStepComponent = ({
                         type={ UmbrlButton.SAVE }
                         onClick={ () => {
                             if (screendatavalid) {
-                                formDataManager.saveScreenData(screendatavalid, true)
+                                formDataManager.saveScreenData(screendatavalid, true, 'SKIP_STORAGE')
                             }
                             setMode(StepMode.RESUME)
                             onConfirm()
@@ -251,7 +255,7 @@ export const RefineMainPolicyHolderStepComponent = ({
                 }}
                 onSaveEdit={ () => {
                     if (screendatavalid) {
-                        formDataManager.saveScreenData(screendatavalid, true)
+                        formDataManager.saveScreenData(screendatavalid, true, 'SKIP_STORAGE')
                     }
                     setMode(StepMode.RESUME)
                     onConfirm()

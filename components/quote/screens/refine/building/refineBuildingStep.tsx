@@ -124,25 +124,9 @@ export const RefineBuildingStepComponent =  ({
         }
     }, [expanded, editable])
 
-
-    // useEffect(() => {
-
-    //     const fromOptsState = stateFromOpts(stepOpts, formDataManager) ?? {}
-
-    //     const toSave = Object.keys(fromOptsState).map(apikey => {
-    //         return {
-    //             apikey,
-    //             val: fromOptsState[apikey]
-    //         }
-    //     })
-
-    //     if (fromOptsState && formDataManager.hasAllRequiredDataInStorableFormat(toSave)) {            
-    //         setScreendataValid(toSave)
-    //     } 
-
-    // }, [localCtx?.state, qqCtx?.state])
-
-    
+    if (!formDataManager) {
+        return null
+    }
 
     // const canConfirm = formDataManager.hasAllRequiredData() || (screendatavalid !== null  && !screendatavalid.some(d => !d))
     const canConfirm = formDataManager.hasAllRequiredDataInStorableFormat(screendatavalid)
@@ -256,7 +240,7 @@ export const RefineBuildingStepComponent =  ({
                         type={ UmbrlButton.SAVE }
                         onClick={ () => {
                             if (screendatavalid) {
-                                formDataManager.saveScreenData(screendatavalid, true)
+                                formDataManager.saveScreenData(screendatavalid, true, 'SKIP_STORAGE')
                             }
                             setMode(StepMode.RESUME)
                             onConfirm()
@@ -289,7 +273,7 @@ export const RefineBuildingStepComponent =  ({
                 }}
                 onSaveEdit={ () => {
                     if (screendatavalid) {
-                        formDataManager.saveScreenData(screendatavalid, true)
+                        formDataManager.saveScreenData(screendatavalid, true, 'SKIP_STORAGE')
                     }
                     setMode(StepMode.RESUME)
                     onConfirm()

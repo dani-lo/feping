@@ -59,7 +59,8 @@ export enum QuoteOptType {
     RANGE_DAYS = 'RANGE_DAYS',
     CLAIMS = 'CLAIMS',
     CUSTOM = 'CUSTOM',
-    HIDDEN = 'HIDDEN'
+    HIDDEN = 'HIDDEN',
+    STARTDATE = 'STARTDATE',
 }
 
 export const QuoteScreenIdToUrl = {
@@ -129,6 +130,8 @@ export interface QuoteOpt {
     blocktitle?: string;
     question?: string;
     validationRule?: QuoteOptValidationRule;
+    tomorrowBtn?: boolean;
+    nextWeekBtn?: boolean;
 }
 
 
@@ -290,7 +293,9 @@ export const StaticQuoteJourneyDefinition: QuoteScreen[] = [
         "opts": [
             {
                 "type": QuoteOptType.DOB,
-                "title": "Cover Start Date",
+                "tomorrowBtn": true,
+                // "nextWeekBtn": true,
+                "title": "Choose another cover start date",
                 "apikey": "start_date",
                 "required": true,
                 "validationRule": QuoteOptValidationRule.NEXT_30_DAYS

@@ -2,10 +2,11 @@ import jiff from "jiff"
 
 import { config } from "@/src/config"
 import { QuoteRequestType, quoteRequestPayload } from "@/src/models/quote"
-import { QuoteState } from "../stores/contexts/quickQuoteStateContext"
-import { UmbrlError } from "../types"
+import type { QuoteState } from "../stores/contexts/quickQuoteStateContext"
+import type { UmbrlError } from "../types"
+import { useMutation, useQuery } from "@tanstack/react-query"
 
-export const fetchPreQuickQuote = async () : Promise<any> => {
+export const fetchPreQuickQuote = async () : Promise<QuoteState | UmbrlError> => {
 
     try {
 
@@ -25,7 +26,7 @@ export const fetchPreQuickQuote = async () : Promise<any> => {
             // @ts-ignore
             return parsedResponse.data as unknown as QuoteState
         } else {
-            
+
             return {
                 error: true,
                 // @ts-ignore
@@ -100,15 +101,28 @@ export const fetchQuickQuoteByUid = async (uid: string) => {
     }
 }
 
-export const refineQuickQuote = async (patchDoc: jiff.JSONPatch, quoteId: string) => {
+interface RefineQuickQuoteError {
+    code: number;
+    message: string;
+    detail: any;
+    error_type: string;
+}
+
+interface RefineQuickQuoteResponse {
+    data: QuoteState;
+    metadata: any;
+    status: string;
+    error: null | RefineQuickQuoteError;
+}
+
+
+export const refineQuickQuote = async (patchDoc: jiff.JSONPatch, quoteId: string): Promise<RefineQuickQuoteResponse | UmbrlError> => {
 
     try {
 
         const data = { operations: patchDoc }
-        const url = `${ config.url.quickquoteRefine }/${quoteId}` 
+        const url = `${ config.url.quickquoteRefine }/${quoteId}`
 
-        // console.log(url)
-        
         const response = await fetch(url, {
             method: "PATCH",
             headers: {
@@ -117,17 +131,18 @@ export const refineQuickQuote = async (patchDoc: jiff.JSONPatch, quoteId: string
             body: JSON.stringify(data)
         })
 
-        const parsedResponse = await response.json()
+        const parsedResponse = await response.json();
 
         if (response?.ok) {
 
-            return parsedResponse.data as unknown as QuoteState
+            return parsedResponse as RefineQuickQuoteResponse
         } else {
 
             return {
                 error: true,
                 // @ts-ignore
-                message: parsedResponse.error?.message ?? 'An error occurred'
+                message: parsedResponse.error?.message ?? 'An error occurred',
+                errorCode: parsedResponse.error?.code ?? '404'
             }
         }
     } catch (err) {
@@ -135,7 +150,8 @@ export const refineQuickQuote = async (patchDoc: jiff.JSONPatch, quoteId: string
 
         return {
             error: true,
-            message: 'An error occurred'
+            message: 'An error occurred',
+            errorCode: '404'
         }
     }
 }
