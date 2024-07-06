@@ -15,6 +15,7 @@ import { LocalStateContext } from "@/src/stores/contexts/localStateContext"
 import { QQResponseStateContext } from "@/src/stores/contexts/quickQuoteStateContext"
 import { useQuoteRefinement } from "@/src/hooks/useQuoteRefinement"
 import { refineExcesssPatchDoc } from "@/src/api/patchers/excess"
+import { SidebarEditor } from "../../../src/stores/jotai/uiState"
 
 export interface ExcessOptData {
     apikey: string;
@@ -49,15 +50,10 @@ export const ExcessesEditorComponent = ({ policySelected, editxcs, setEditxc, bu
         testing: true
     })
 
-    return <Modal
-        isOpen={!!editxcs}
-        placement="center"
-        onOpenChange={ () => setEditxc(!editxcs)}
-        isDismissable={ false }
-    >
-        <ModalContent>
-            <ModalHeader className="flex flex-col gap-1">Edit excess</ModalHeader>
-            <ModalBody>
+    return <SidebarComponent sidebarEditorId={ SidebarEditor.EXCESS }>
+       
+            <TxtTitleSub TXT="Edit excess" />
+
             <ExcessesSlidersComponent
                 policySelected={ policySelected }
                 onBuildingsExcessChange={ (d: ExcessOptData[]) => {
@@ -85,20 +81,20 @@ export const ExcessesEditorComponent = ({ policySelected, editxcs, setEditxc, bu
                 buildingExcess={ buildingExcess }
                 contentsExcess={ contentsExcess }
             />
-            </ModalBody>
-            <ModalFooter>
-                {
-                    refining ?
-                    <div className="fxrow fxrow-center"><CircularProgress /></div>:
+           
+            {
+                refining ?
+                <div className="fxrow fxrow-center"><CircularProgress /></div>:
+                <div className="py-4">
                     <BtnComponentB
                         label="Update quote price"
                         type={ UmbrlButton.UPDATE }
                         onClick={ () => setRefining() }
                     />
-                }
-            </ModalFooter>
-        </ModalContent>
-    </Modal>
+                </div>
+            }
+          
+    </SidebarComponent>
 }
 
 

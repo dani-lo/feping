@@ -17,6 +17,7 @@ import { SidebarComponent } from "@/components/util/sidebar";
 import { useMetadata } from "@/src/hooks/useMetadata";
 import { useAtom } from "jotai";
 import { uiStateSidebar } from "@/src/stores/jotai/uiState";
+import { SidebarEditor } from "../../../src/stores/jotai/uiState";
 
 // export const ClaimsEditorComponent = ({ claims, onAddClaim, onDeleteClaim, onCancel }: {
 //     claims: Claim[];
@@ -126,7 +127,7 @@ export const ClaimsEditorComponent = ({ claimsDispatch, onSaveClaim }: {
         selectWrapper: "border bg-white",
     }
 
-    return <SidebarComponent> 
+    return <SidebarComponent sidebarEditorId={ SidebarEditor.CLAIMS }> 
         <ScreenContainerComponent to={ 100 }>
             <div className="claims-editor">
 

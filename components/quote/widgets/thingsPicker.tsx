@@ -23,7 +23,10 @@ import { Thing, ThingDoc } from "@/src/models/thing";
 import { BtnComponent, BtnComponentB, UmbrlButton } from "@/components/libForm/btn";
 import { InfoBlockComponent } from "./infoBlock";
 import { PillBtnComponent } from "./pillBtn";
-import { PillComponent } from "./pill";
+import { PillComponent } from "./pill"
+
+import { SidebarComponent } from '@/components/util/sidebar'
+import { SidebarEditor } from "../../../src/stores/jotai/uiState";
 
 
 export interface CategoriesTree {
@@ -134,95 +137,91 @@ export const ThingsPickerComponent = ({ onSaveThing, disableAnimation, forceOuts
 }) => {
 
     
-
+    const [sidebar, setSidebar] = useAtom(uiStateSidebar)
     const [editThing, setEditThing] = useState<Thing | null>(null)
-    
-    return <div className="things-picker-widget accordion-container"> 
-        <TxtTitleSub
-            txt="Add high risk items"
-        />
-         {/* <SelectableListComponent
-            items={ Object.values(thingsCategories).map(sub => ({ label: sub.title, text: sub.text, key: sub.id })) }
-            onSelectItem={ (key: any) => {
-                setEditThing(new Thing({
-                    category: key,
-                    insideAndOutside: forceOutside ? true : false,
-                }))
-            }}
-            actionLabel="Add"
-        /> */}
-        {
-            Object.values(thingsCategories).map(tc => {
-                return <PillBtnComponent
-                    id={ tc.id }
-                    text={ tc.text }
-                    title={ tc.title }
-                    icon={ tc.icon }
-                    onSelect={ (id: string) => {
-                        setEditThing(new Thing({
-                            category: id,
-                            insideAndOutside: forceOutside ? true : false,
-                        }))
-                    } }
-                    key={ tc.id }
-                />  
-            })
+
+    useEffect(() => {
+
+        if (!!editThing) {
+            setSidebar(SidebarEditor.HRIS)
+        } else {
+            setSidebar(null)
         }
-        {/* <SelectableThingsPillComponent
-            selectables={ 
+
+    }, [editThing])
+    
+    return <div className="things-picker-widget"> 
+            <TxtTitleSub
+                txt="Add high risk items"
+            />
+            {/* <SelectableListComponent
+                items={ Object.values(thingsCategories).map(sub => ({ label: sub.title, text: sub.text, key: sub.id })) }
+                onSelectItem={ (key: any) => {
+                    setEditThing(new Thing({
+                        category: key,
+                        insideAndOutside: forceOutside ? true : false,
+                    }))
+                }}
+                actionLabel="Add"
+            /> */}
+            {
                 Object.values(thingsCategories).map(tc => {
-                    return {
-                        title: '',
-                        icon: '',
-                        text: '',
-                        onSelect: (id: string) => {
+                    return <PillBtnComponent
+                        id={ tc.id }
+                        text={ tc.text }
+                        title={ tc.title }
+                        icon={ tc.icon }
+                        onSelect={ (id: string) => {
                             setEditThing(new Thing({
                                 category: id,
                                 insideAndOutside: forceOutside ? true : false,
                             }))
-                        }
-                    }
-                }) 
-        }
-        /> */}
-        <Modal
-            isOpen={ !!editThing } 
-            placement="center"
-            onOpenChange={ () => setEditThing(null) } 
-            isDismissable={ true }
-            disableAnimation={ disableAnimation }
-            data-testid="edit-picked-thing"
-        >
-            <ModalContent>
-                <ModalHeader className="flex flex-col gap-1">Please add some details for your item</ModalHeader>
-                <ModalBody>
-                    <ThingEditorComponent
-                        thing={ editThing }
-                        catLabel={ editThing?.category?.toLowerCase() ?? ''}
-                        onEditSave={ (t: ThingDoc) => {
-
-                            setEditThing(null)
-
-                            if (t.description && t.value) {
-                                onSaveThing(new Thing({
-                                    category: t.category,
-                                    insideAndOutside: t.insideAndOutside,
-                                    value: t.value,
-                                    description: t.description
+                        } }
+                        key={ tc.id }
+                    />  
+                })
+            }
+            {/* <SelectableThingsPillComponent
+                selectables={ 
+                    Object.values(thingsCategories).map(tc => {
+                        return {
+                            title: '',
+                            icon: '',
+                            text: '',
+                            onSelect: (id: string) => {
+                                setEditThing(new Thing({
+                                    category: id,
+                                    insideAndOutside: forceOutside ? true : false,
                                 }))
                             }
-                        }}
-                        onEditCancel={ () => {
-                            setEditThing(null)
-                        }}
-                    />
-                </ModalBody>
+                        }
+                    }) 
+            }
+            /> */}
+            <SidebarComponent  sidebarEditorId={ SidebarEditor.HRIS }>
+                        <ThingEditorComponent
+                            thing={ editThing }
+                            catLabel={ editThing?.category?.toLowerCase() ?? ''}
+                            onEditSave={ (t: ThingDoc) => {
+
+                                setEditThing(null)
+
+                                if (t.description && t.value) {
+                                    onSaveThing(new Thing({
+                                        category: t.category,
+                                        insideAndOutside: t.insideAndOutside,
+                                        value: t.value,
+                                        description: t.description
+                                    }))
+                                }
+                            }}
+                            onEditCancel={ () => {
+                                setEditThing(null)
+                            }}
+                        />
+            </SidebarComponent>
                 
-            </ModalContent>
-        </Modal>
-        {/* <BtnComponent */}
-            
-    </div>
+        </div>
 }
 
 const ThingEditorComponent = ({ catLabel, thing, onEditSave, onEditCancel }: { 
@@ -240,66 +239,68 @@ const ThingEditorComponent = ({ catLabel, thing, onEditSave, onEditCancel }: {
         return null
     }
 
-    return <div className="thing-editor-widget">
-        <TxtTitleSub txt={ catLabel } capitalize={ true } />
-        <div>
-            <TxtLabel txt="Item description" />
-            <Input
-                value={ desc }
-                type="text"
-                onChange={ (e) => setDesc(e.target.value)}
-                data-testid="edit-picked-thing-description"
-            />
-            <InfoBlockComponent info="Please provide clear and detailed description, e.g. brand, model name, or colour." />
-        </div>
-        <div>
-            <TxtLabel txt="Add item value (£)" />
-            <Input
-                type="number"
-                onChange={ (e) => setVal(Number(e.target.value))}
-                data-testid="edit-picked-thing-value"
-            />
-            <InfoBlockComponent info={ `Add current market value of the item. Remember to only specify individual jewellery items over ${ formatCurrency(1500) }. ` } />
-        </div>
-        <div>
-            <Switch 
-                defaultSelected={ false }
-                isSelected={ !!outside }
-                onChange={ () => setOutside(!outside)}
-                size="sm"
-                data-testid="edit-picked-thing-inclusion"
-            >
-                Cover this item away-from-home
-            </Switch>
-            <InfoBlockComponent info="If you're planning to carry this item away-from-home, consider to cover it." />
-        </div>
-        <ModalFooter>
+    return <SidebarComponent sidebarEditorId={ SidebarEditor.HRIS }> 
+        <div className="thing-editor-widget">
+            <TxtTitleSub txt={ catLabel } capitalize={ true } />
             <div>
-                <BtnComponentB
-                    type={ UmbrlButton.CANCEL }
-                    onClick={() => onEditCancel() }
-                    label="Cancel"
-                    data-testid="edit-picked-thing-cancel"
+                <TxtLabel txt="Item description" />
+                <Input
+                    value={ desc }
+                    type="text"
+                    onChange={ (e) => setDesc(e.target.value)}
+                    data-testid="edit-picked-thing-description"
                 />
-                <BtnComponentB
-                    type={ UmbrlButton.CONFIRM }
-                    onClick={() =>{ 
-
-                        const t = new Thing({
-                            category: thing.category,
-                            description: desc,
-                            value: val,
-                            insideAndOutside: outside
-                        })
-
-                        onEditSave(t)
-                    }}
-                    label="Ok"
-                    data-testid="edit-picked-thing-save"
-                    disabled={ !desc || !val || val === 0 }
-                />
+                <InfoBlockComponent info="Please provide clear and detailed description, e.g. brand, model name, or colour." />
             </div>
-        </ModalFooter>
-    </div>
+            <div>
+                <TxtLabel txt="Add item value (£)" />
+                <Input
+                    type="number"
+                    onChange={ (e) => setVal(Number(e.target.value))}
+                    data-testid="edit-picked-thing-value"
+                />
+                <InfoBlockComponent info={ `Add current market value of the item. Remember to only specify individual jewellery items over ${ formatCurrency(1500) }. ` } />
+            </div>
+            <div>
+                <Switch 
+                    defaultSelected={ false }
+                    isSelected={ !!outside }
+                    onChange={ () => setOutside(!outside)}
+                    size="sm"
+                    data-testid="edit-picked-thing-inclusion"
+                >
+                    Cover this item away-from-home
+                </Switch>
+                <InfoBlockComponent info="If you're planning to carry this item away-from-home, consider to cover it." />
+            </div>
+            <ModalFooter>
+                <div>
+                    <BtnComponentB
+                        type={ UmbrlButton.CANCEL }
+                        onClick={() => onEditCancel() }
+                        label="Cancel"
+                        data-testid="edit-picked-thing-cancel"
+                    />
+                    <BtnComponentB
+                        type={ UmbrlButton.CONFIRM }
+                        onClick={() =>{ 
+
+                            const t = new Thing({
+                                category: thing.category,
+                                description: desc,
+                                value: val,
+                                insideAndOutside: outside
+                            })
+
+                            onEditSave(t)
+                        }}
+                        label="Ok"
+                        data-testid="edit-picked-thing-save"
+                        disabled={ !desc || !val || val === 0 }
+                    />
+                </div>
+            </ModalFooter>
+        </div>
+    </SidebarComponent> 
 
 }

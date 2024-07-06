@@ -26,6 +26,7 @@ import { useUmbrlForm } from "@/src/hooks/useUmbrlForm"
 import { ClaimsEditorActions, claimsEditorStateReducer, defaultClaimsEditorState } from "@/src/stores/reducers/claimsDataReducer"
 import { uiStateSidebar } from "@/src/stores/jotai/uiState"
 import { useAtom } from "jotai"
+import { SidebarEditor } from "../../../../../src/stores/jotai/uiState"
 
 export const apisection = 'main_policy_holder' 
 
@@ -172,7 +173,7 @@ export const RefineClaimsStepComponent =  ({
                                     }
                                 })
 
-                                setSidebar(true)
+                                setSidebar(SidebarEditor.CLAIMS)
                                 
                             } }
                             label="Yes"
@@ -207,7 +208,7 @@ export const RefineClaimsStepComponent =  ({
                     label="Add another claim"
                     onClick={() => {
                         setAddmore(true)
-                        setSidebar(true)
+                        setSidebar(SidebarEditor.CLAIMS)
                     }}
                 />
                 <BtnComponentB
@@ -243,7 +244,7 @@ export const RefineClaimsStepComponent =  ({
                     claimsDispatch={ dispatchToClaimsReducer }
                     onSaveClaim={ () => {
                         setAddmore(false)
-                        setSidebar(false)
+                        setSidebar(null)
                     } }
                 />
                 //: null

@@ -1,16 +1,18 @@
 import { uiStateSidebar } from "@/src/stores/jotai/uiState";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react"
+import { SidebarEditor } from "../../src/stores/jotai/uiState";
 
-export const SidebarComponent = ({ children }: { children: any; }) => {
+export const SidebarComponent = ({ children, sidebarEditorId }: { children: any; sidebarEditorId: SidebarEditor }) => {
 
     const [sidebar] = useAtom(uiStateSidebar)
-    console.log('SIDEBARCOMP =====', sidebar, `umbrl-sidebar${ sidebar ? ' active' : '' }`)
+    const isActive = sidebar === sidebarEditorId
+
     return <>
         { 
-            sidebar ? <div className="modal-bg"></div> : null
+            isActive ? <div className="modal-bg"></div> : null
         }
-        <div className={ `umbrl-sidebar${ sidebar ? ' active' : '' }` }>
+        <div className={ `umbrl-sidebar${ isActive ? ' active' : '' }` }>
             { children }
         </div>
     </>
