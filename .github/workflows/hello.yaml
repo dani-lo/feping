@@ -6,6 +6,7 @@ name: Hello
 #   workflow_dispatch: # Put here!!
 
 on:
+    workflow_dispatch:
     push:
       branches:
         - main
