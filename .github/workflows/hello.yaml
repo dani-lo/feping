@@ -1,9 +1,15 @@
 name: Hello
 
+# on:
+#   release:
+#     types: [created]
+#   workflow_dispatch: # Put here!!
+
 on:
-  release:
-    types: [created]
-  workflow_dispatch: # Put here!!
+    push:
+      branches:
+        - main
+  
   
 jobs:
   example-job:
