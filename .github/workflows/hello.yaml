@@ -1,8 +1,10 @@
 name: Hello
 
 on:
-  workflow_dispatch:
-
+  release:
+    types: [created]
+  workflow_dispatch: # Put here!!
+  
 jobs:
   example-job:
     runs-on: ubuntu-latest
